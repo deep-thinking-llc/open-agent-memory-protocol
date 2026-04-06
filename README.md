@@ -6,8 +6,8 @@
 
 [![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](spec/v1/oamp-v1.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](reference/rust/)
-[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](reference/typescript/)
+[![Rust Crate](https://img.shields.io/crates/v/oamp-types.svg)](https://crates.io/crates/oamp-types)
+[![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
 
 [Specification](spec/v1/oamp-v1.md) | [Rust Crate](reference/rust/) | [TypeScript Package](reference/typescript/) | [Security Guide](docs/security-guide.md)
 
