@@ -1,102 +1,111 @@
-# Open Agent Memory Protocol (OAMP)
+<div align="center">
+
+# Open Agent Memory Protocol
+
+### 你的 AI 智能体的记忆，应该属于你自己。
+
+[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](../spec/v1/oamp-v1.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
+[![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
+[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+
+[规范](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 包](../reference/typescript/) | [安全指南](security-guide.md)
+
+---
 
 [English](../README.md) | [한국어](README.ko.md) | [日本語](README.ja.md) | [Bahasa Melayu](README.ms.md)
 
-**一种用于在 AI 智能体与记忆后端之间存储、交换和查询记忆数据的开放标准。**
+</div>
 
-OAMP 使 AI 智能体能够记住它们从用户那里学到的内容——并且可以在不同的智能体框架和存储后端之间可移植地共享这些记忆，同时从底层就内置了隐私和安全保护。
+## 问题所在
 
-## 为什么需要 OAMP？
+每个 AI 智能体都以不同的方式存储记忆。当你切换智能体时，一切从零开始。
 
-如今，每个 AI 智能体框架都以不同的方式存储用户记忆。当你切换智能体时，之前的智能体学到的关于你的一切都会丢失——你的偏好、专业知识、纠正记录、工作流模式。OAMP 通过定义以下内容来解决这个问题：
+```
+智能体 A                          智能体 B
+  学习你的偏好               →     一无所知
+  追踪你的专业知识           →     从头开始
+  记住你的纠正               →     重复同样的错误
+  理解你的工作流程           →     通用回答
+```
 
-- **通用格式**——用于智能体记忆（JSON Schema + Protobuf）
-- **REST API 契约**——用于记忆后端
-- **隐私要求**——每个实现都必须满足
-- **参考实现**——提供 Rust 和 TypeScript 版本
+你的纠正记录、偏好和专业知识被锁定在专有格式中。**每次切换，你都会失去数周的上下文。**
 
-### 问题所在
+## 解决方案
 
-- 智能体 A 学到了你偏好简洁的回答、你是 Rust 专家、你不希望代码示例中出现 `unwrap()`
-- 你切换到了智能体 B
-- 智能体 B 对你一无所知——你从零开始
-- 你的纠正记录、偏好和专业知识被锁定在智能体 A 的专有格式中
+OAMP 是一个开放标准，让智能体的记忆可移植、隐私安全且可互操作。
 
-### OAMP 的解决方案
+```
+智能体 A                          智能体 B
+  导出为 OAMP               →     导入 OAMP
+  标准 JSON 格式             →     即时上下文
+  你的数据，你做主           →     没有供应商锁定
+```
 
-- 智能体 A 将你的记忆导出为 OAMP 文档（标准 JSON）
-- 智能体 B 导入该文档
-- 智能体 B 立即了解你的偏好、专业知识和纠正记录
-- 没有供应商锁定。你的记忆属于你自己。
+---
 
-## OAMP 定义了什么
+## 核心内容
+
+<table>
+<tr>
+<td width="50%">
 
 ### 知识层
-智能体从你身上学到的离散事实：
+
+智能体学到的离散事实：
 
 ```json
 {
-  "type": "knowledge_entry",
   "category": "correction",
-  "content": "永远不要使用 unwrap()——始终使用 ? 运算符进行正确的错误处理",
-  "confidence": 0.98,
-  "source": { "session_id": "sess-003", "timestamp": "2026-03-12T16:45:00Z" }
+  "content": "永远不要使用 unwrap()——使用 ? 运算符",
+  "confidence": 0.98
 }
 ```
 
-四种类别：**fact**（客观信息）、**preference**（你喜欢的方式）、**pattern**（你倾向于做的事情）、**correction**（你告诉智能体不要再做的事情）。
+四种类型：**fact** · **preference** · **pattern** · **correction**
+
+</td>
+<td width="50%">
 
 ### 用户模型层
-关于你是谁的更丰富的画像：
+
+关于你是谁的丰富画像：
 
 ```json
 {
-  "type": "user_model",
-  "communication": { "verbosity": -0.6, "formality": 0.2 },
   "expertise": [
-    { "domain": "rust", "level": "expert", "confidence": 0.95 },
-    { "domain": "react", "level": "novice", "confidence": 0.60 }
+    { "domain": "rust", "level": "expert" },
+    { "domain": "react", "level": "novice" }
   ],
-  "corrections": [
-    { "what_agent_did": "使用了 unwrap()", "what_user_wanted": "使用 ? 运算符" }
-  ]
+  "communication": { "verbosity": -0.6 }
 }
 ```
 
-### 隐私要求（强制性）
+追踪：**专业知识** · **沟通风格** · **纠正记录** · **偏好**
 
-OAMP 非常重视隐私。合规的实现**必须**：
+</td>
+</tr>
+</table>
 
-- **对所有静态数据加密**（推荐 AES-256-GCM）
-- **支持完整数据导出**——用户拥有自己的记忆
-- **支持完整删除**——真正的删除，而非软删除
-- **永远不记录内容**——仅记录 ID 和类别
-- **追踪来源**——每条记录都记录其来源
+---
 
-## 仓库结构
+## 隐私优先
 
-```
-open-agent-memory-protocol/
-├── spec/v1/                    # 权威规范
-│   ├── oamp-v1.md             # 人类可读规范（RFC 2119）
-│   ├── *.schema.json          # JSON Schema (draft-2020-12)
-│   └── examples/              # 有效的示例文档
-├── proto/oamp/v1/             # Protocol Buffer 定义
-├── reference/
-│   ├── rust/                  # Rust crate: oamp-types
-│   └── typescript/            # npm 包: @oamp/types
-├── validators/
-│   ├── validate.sh            # CLI 验证器
-│   └── test-fixtures/         # 有效和无效的测试文档
-└── docs/
-    ├── guide-for-agents.md    # 如何为你的智能体添加 OAMP 支持
-    ├── guide-for-backends.md  # 如何构建 OAMP 后端
-    └── security-guide.md      # 加密、GDPR、威胁模型
-```
+OAMP 不将隐私视为可选项。以下是**强制性要求**——而非指南：
+
+| 要求 | 详情 |
+|:---|:---|
+| **静态数据加密** | 所有存储数据必须加密（推荐 AES-256-GCM） |
+| **用户数据所有权** | 必须支持完整导出——用户拥有自己的记忆 |
+| **删除权** | 真正的删除，而非软删除。符合 GDPR 第 17 条 |
+| **禁止内容日志** | 实现不得记录知识内容 |
+| **来源追踪** | 每条记录都记录其学习的时间和来源 |
+
+---
 
 ## 快速入门
 
-### 验证文档
+### 验证
 
 ```bash
 ./validators/validate.sh my-export.json
@@ -112,19 +121,15 @@ oamp-types = "1.0"
 ```rust
 use oamp_types::{KnowledgeEntry, KnowledgeCategory};
 
-// 创建一条知识条目
 let entry = KnowledgeEntry::new(
     "user-123",
     KnowledgeCategory::Correction,
-    "永远不要使用 unwrap()——改用 ? 运算符",
+    "Never use unwrap() — use ? operator instead",
     0.98,
     "session-42",
 );
 
-// 序列化为 OAMP JSON
-let json = serde_json::to_string_pretty(&entry)?;
-
-// 验证
+// Validate against spec
 oamp_types::validate::validate_knowledge_entry(&entry)?;
 ```
 
@@ -137,69 +142,114 @@ npm install @oamp/types
 ```typescript
 import { KnowledgeEntry } from '@oamp/types';
 
-// 验证并解析 OAMP 文档
 const entry = KnowledgeEntry.parse(jsonData);
-
-// 类型安全的访问
-console.log(entry.category); // "correction"
-console.log(entry.confidence); // 0.98
+console.log(entry.category);   // "correction"
+console.log(entry.confidence);  // 0.98
 ```
 
-## 面向智能体开发者
+---
 
-想为你的智能体添加 OAMP 支持？请参阅[智能体指南](guide-for-agents.md)。
+## 仓库结构
 
-简而言之：
-1. **导出** — 将你的内部记忆类型映射为 OAMP JSON
-2. **导入** — 将 OAMP JSON 解析为你的内部类型
-3. **验证** — 使用 JSON Schema 或参考库确保合规
+```
+spec/v1/
+  oamp-v1.md              权威规范（RFC 2119）
+  *.schema.json            JSON Schema 定义（draft-2020-12）
+  examples/                有效的示例文档
 
-## 面向后端开发者
+proto/oamp/v1/             Protocol Buffer 定义
 
-想构建一个符合 OAMP 标准的记忆后端？请参阅[后端指南](guide-for-backends.md)。
+reference/
+  rust/                    Rust crate: oamp-types
+  typescript/              npm 包: @oamp/types
 
-你的后端需要实现 9 个 REST 端点，涵盖知识的增删改查、用户模型存储以及批量导出/导入。
+validators/
+  validate.sh              CLI 文档验证器
+  test-fixtures/            有效和无效的测试文档
+
+docs/
+  guide-for-agents.md      为你的智能体实现 OAMP
+  guide-for-backends.md    构建符合 OAMP 标准的后端
+  security-guide.md        加密、GDPR/CCPA、威胁模型
+```
+
+---
+
+## 集成 OAMP
+
+<table>
+<tr>
+<td width="50%">
+
+### 面向智能体开发者
+
+为你的智能体添加记忆可移植性：
+
+1. **导出** — 将内部类型映射为 OAMP JSON
+2. **导入** — 将 OAMP JSON 解析为内部类型
+3. **验证** — 确保符合 Schema
+
+[阅读智能体指南 →](guide-for-agents.md)
+
+</td>
+<td width="50%">
+
+### 面向后端开发者
+
+构建符合 OAMP 标准的记忆存储：
+
+- 9 个 REST 端点（知识增删改查、用户模型、导出/导入）
+- 静态加密（强制性）
+- 搜索（全文搜索、向量搜索或混合搜索——由你选择）
+
+[阅读后端指南 →](guide-for-backends.md)
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 规范
 
-完整规范位于 [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md)。它使用 RFC 2119 语言（MUST、SHOULD、MAY）来定义合规级别。
+| | |
+|:---|:---|
+| **当前版本** | v1.0.0 |
+| **Schema 格式** | JSON Schema (draft-2020-12) + Protocol Buffers |
+| **合规语言** | RFC 2119 (MUST, SHOULD, MAY) |
+| **完整规范** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
 
-### 版本
+### v2.0 计划
 
-当前版本：**v1.0.0**
-
-规范采用语义化版本控制。文档包含 `oamp_version` 字段以实现前向兼容性。
-
-### 未来规划（v2.0）
-
-v2.0 计划（基于社区反馈）：
+基于社区反馈：
 - 会话成果（结构化任务记录）
 - 技能指标（执行统计数据）
 - 工作模式（活动时间、工具偏好）
 - 用于实时记忆同步的流式 API
 
-## 安全
-
-请参阅[安全指南](security-guide.md)了解：
-- 推荐的密码套件
-- 密钥管理模式
-- GDPR 第 17 条 / CCPA 合规映射
-- 记忆交换的威胁模型
+---
 
 ## 贡献
 
-我们欢迎贡献。请：
-1. 在提出更改之前阅读规范
-2. 为任何 Schema 更改添加测试夹具
+我们欢迎贡献：
+
+1. 在提出更改之前阅读[规范](../spec/v1/oamp-v1.md)
+2. 为 Schema 更改添加测试夹具
 3. 同时更新 Rust 和 TypeScript 参考实现
 4. 遵循现有的代码风格
 
-## 联系方式
+---
 
-如有问题、合作意向或反馈：
+<div align="center">
 
-**邮箱：** contact@dthink.ai
+### 联系方式
 
-## 许可证
+如有问题、合作意向或反馈
 
-MIT — 参见 [LICENSE](../LICENSE)
+**contact@dthink.ai**
+
+---
+
+**MIT 许可证** — [Deep Thinking LLC](https://dthink.ai)
+
+</div>
