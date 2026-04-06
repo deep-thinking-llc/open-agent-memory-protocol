@@ -1,0 +1,53 @@
+syntax = "proto3";
+package oamp.v1;
+
+enum ExpertiseLevel {
+  EXPERTISE_LEVEL_UNSPECIFIED = 0;
+  EXPERTISE_LEVEL_NOVICE = 1;
+  EXPERTISE_LEVEL_INTERMEDIATE = 2;
+  EXPERTISE_LEVEL_ADVANCED = 3;
+  EXPERTISE_LEVEL_EXPERT = 4;
+}
+
+message CommunicationProfile {
+  float verbosity = 1;       // -1.0 to 1.0
+  float formality = 2;       // -1.0 to 1.0
+  bool prefers_examples = 3;
+  bool prefers_explanations = 4;
+  repeated string languages = 5;
+}
+
+message ExpertiseDomain {
+  string domain = 1;
+  ExpertiseLevel level = 2;
+  float confidence = 3;
+  repeated string evidence_sessions = 4;
+  optional string last_observed = 5; // ISO 8601
+}
+
+message Correction {
+  string what_agent_did = 1;
+  string what_user_wanted = 2;
+  optional string context = 3;
+  string session_id = 4;
+  string timestamp = 5; // ISO 8601
+}
+
+message StatedPreference {
+  string key = 1;
+  string value = 2;
+  string timestamp = 3; // ISO 8601
+}
+
+message UserModel {
+  string oamp_version = 1;
+  string type = 2; // "user_model"
+  string user_id = 3;
+  uint64 model_version = 4;
+  string updated_at = 5; // ISO 8601
+  optional CommunicationProfile communication = 6;
+  repeated ExpertiseDomain expertise = 7;
+  repeated Correction corrections = 8;
+  repeated StatedPreference stated_preferences = 9;
+  map<string, string> metadata = 10;
+}

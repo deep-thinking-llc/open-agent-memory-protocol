@@ -1,0 +1,44 @@
+syntax = "proto3";
+package oamp.v1;
+
+enum KnowledgeCategory {
+  KNOWLEDGE_CATEGORY_UNSPECIFIED = 0;
+  KNOWLEDGE_CATEGORY_FACT = 1;
+  KNOWLEDGE_CATEGORY_PREFERENCE = 2;
+  KNOWLEDGE_CATEGORY_PATTERN = 3;
+  KNOWLEDGE_CATEGORY_CORRECTION = 4;
+}
+
+message KnowledgeSource {
+  string session_id = 1;
+  optional string agent_id = 2;
+  string timestamp = 3; // ISO 8601
+}
+
+message KnowledgeDecay {
+  optional double half_life_days = 1;
+  optional string last_confirmed = 2; // ISO 8601
+}
+
+message KnowledgeEntry {
+  string oamp_version = 1;
+  string type = 2; // "knowledge_entry"
+  string id = 3;
+  string user_id = 4;
+  KnowledgeCategory category = 5;
+  string content = 6;
+  float confidence = 7;
+  KnowledgeSource source = 8;
+  optional KnowledgeDecay decay = 9;
+  repeated string tags = 10;
+  map<string, string> metadata = 11;
+}
+
+message KnowledgeStore {
+  string oamp_version = 1;
+  string type = 2; // "knowledge_store"
+  string user_id = 3;
+  repeated KnowledgeEntry entries = 4;
+  string exported_at = 5; // ISO 8601
+  optional string agent_id = 6;
+}
