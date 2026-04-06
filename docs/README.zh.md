@@ -202,4 +202,4 @@ v2.0 计划（基于社区反馈）：
 
 ## 许可证
 
-Apache 2.0 — 参见 [LICENSE](../LICENSE)
+MIT — 参见 [LICENSE](../LICENSE)
