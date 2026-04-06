@@ -1,102 +1,111 @@
-# Open Agent Memory Protocol (OAMP)
+<div align="center">
+
+# Open Agent Memory Protocol
+
+### AIエージェントの記憶は、あなたのものであるべきです。
+
+[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](../spec/v1/oamp-v1.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
+[![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
+[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+
+[仕様](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript パッケージ](../reference/typescript/) | [セキュリティガイド](security-guide.md)
+
+---
 
 [English](../README.md) | [中文](README.zh.md) | [한국어](README.ko.md) | [Bahasa Melayu](README.ms.md)
 
-**AIエージェントとメモリバックエンド間でメモリデータを保存、交換、クエリするための標準規格です。**
+</div>
 
-OAMPは、AIエージェントがユーザーについて学んだことを記憶し、プライバシーとセキュリティを基盤から組み込みながら、異なるエージェントフレームワークやストレージバックエンド間でポータブルにメモリを共有することを可能にします。
+## 問題点
 
-## なぜOAMPが必要なのか？
+すべてのAIエージェントはメモリを異なる方法で保存しています。エージェントを切り替えると、ゼロからのスタートです。
 
-現在、すべてのAIエージェントフレームワークはユーザーメモリを異なる方法で保存しています。エージェントを切り替えると、以前のエージェントがあなたについて学んだすべてのこと——好み、専門知識、修正履歴、ワークフローパターン——を失います。OAMPは以下を定義することでこの問題を解決します：
+```
+エージェント A                          エージェント B
+  あなたの好みを学習           →     何も知らない
+  あなたの専門知識を追跡       →     最初からやり直し
+  修正を記憶                   →     同じミスを繰り返す
+  あなたのワークフローを理解   →     汎用的な応答
+```
 
-- **共通フォーマット** — エージェントメモリ用（JSON Schema + Protobuf）
-- **REST API契約** — メモリバックエンド用
-- **プライバシー要件** — すべての実装が満たすべきもの
-- **リファレンス実装** — RustおよびTypeScriptで提供
+あなたの修正履歴、好み、専門知識はプロプライエタリなフォーマットに閉じ込められています。**切り替えるたびに、数週間分のコンテキストを失います。**
 
-### 問題点
+## 解決策
 
-- エージェントAが、あなたが簡潔な回答を好み、Rustの専門家であり、コード例で`unwrap()`を使ってほしくないことを学習します
-- エージェントBに切り替えます
-- エージェントBはあなたについて何も知りません——ゼロからのスタートです
-- あなたの修正履歴、好み、専門知識はエージェントAの独自フォーマットに閉じ込められています
+OAMPは、エージェントメモリをポータブルで、プライバシーが守られ、相互運用可能にするオープンスタンダードです。
 
-### OAMPの解決策
+```
+エージェント A                          エージェント B
+  OAMPとしてエクスポート       →     OAMPをインポート
+  標準JSONフォーマット         →     即座にコンテキスト取得
+  あなたのデータ、あなたの管理 →     ベンダーロックインなし
+```
 
-- エージェントAがあなたのメモリをOAMPドキュメント（標準JSON）としてエクスポートします
-- エージェントBがそれをインポートします
-- エージェントBがあなたの好み、専門知識、修正履歴を即座に把握します
-- ベンダーロックインなし。あなたのメモリはあなたのものです。
+---
 
-## OAMPが定義するもの
+## 核心コンテンツ
+
+<table>
+<tr>
+<td width="50%">
 
 ### ナレッジ層
-エージェントがあなたについて学ぶ個別の事実：
+
+エージェントが学ぶ個別の事実：
 
 ```json
 {
-  "type": "knowledge_entry",
   "category": "correction",
-  "content": "unwrap()は絶対に使用しないでください——常に?演算子で適切なエラー処理を行ってください",
-  "confidence": 0.98,
-  "source": { "session_id": "sess-003", "timestamp": "2026-03-12T16:45:00Z" }
+  "content": "unwrap()は使用しないでください — ?演算子を使用してください",
+  "confidence": 0.98
 }
 ```
 
-4つのカテゴリ：**fact**（客観的情報）、**preference**（好みの方法）、**pattern**（よく行う行動）、**correction**（エージェントにやめるよう指示したこと）。
+4つのタイプ：**fact** · **preference** · **pattern** · **correction**
+
+</td>
+<td width="50%">
 
 ### ユーザーモデル層
-あなたが誰であるかのより詳細なプロフィール：
+
+あなたが誰であるかの詳細なプロフィール：
 
 ```json
 {
-  "type": "user_model",
-  "communication": { "verbosity": -0.6, "formality": 0.2 },
   "expertise": [
-    { "domain": "rust", "level": "expert", "confidence": 0.95 },
-    { "domain": "react", "level": "novice", "confidence": 0.60 }
+    { "domain": "rust", "level": "expert" },
+    { "domain": "react", "level": "novice" }
   ],
-  "corrections": [
-    { "what_agent_did": "unwrap()を使用した", "what_user_wanted": "?演算子を使用する" }
-  ]
+  "communication": { "verbosity": -0.6 }
 }
 ```
 
-### プライバシー要件（必須）
+追跡項目：**専門知識** · **コミュニケーションスタイル** · **修正履歴** · **好み**
 
-OAMPはプライバシーを重視しています。準拠する実装は**必ず**以下を満たさなければなりません：
+</td>
+</tr>
+</table>
 
-- **保存データをすべて暗号化**（AES-256-GCM推奨）
-- **完全なデータエクスポートをサポート** — ユーザーが自分のメモリを所有します
-- **完全な削除をサポート** — ソフトデリートではなく、本当の削除
-- **コンテンツを絶対にログに記録しない** — IDとカテゴリのみ
-- **出所を追跡** — すべてのエントリがどこから来たかを記録
+---
 
-## リポジトリ構造
+## プライバシー最優先
 
-```
-open-agent-memory-protocol/
-├── spec/v1/                    # 権威ある仕様
-│   ├── oamp-v1.md             # 人間が読める仕様（RFC 2119）
-│   ├── *.schema.json          # JSON Schema (draft-2020-12)
-│   └── examples/              # 有効なサンプルドキュメント
-├── proto/oamp/v1/             # Protocol Buffer定義
-├── reference/
-│   ├── rust/                  # Rust crate: oamp-types
-│   └── typescript/            # npmパッケージ: @oamp/types
-├── validators/
-│   ├── validate.sh            # CLIバリデータ
-│   └── test-fixtures/         # 有効および無効なテストドキュメント
-└── docs/
-    ├── guide-for-agents.md    # エージェントにOAMPを追加する方法
-    ├── guide-for-backends.md  # OAMPバックエンドを構築する方法
-    └── security-guide.md      # 暗号化、GDPR、脅威モデル
-```
+OAMPはプライバシーをオプションとして扱いません。これらは**必須要件**であり、ガイドラインではありません：
+
+| 要件 | 詳細 |
+|:---|:---|
+| **保存データの暗号化** | すべての保存データは暗号化されなければなりません（AES-256-GCM推奨） |
+| **ユーザーデータの所有権** | 完全なエクスポートをサポートしなければなりません — ユーザーが自分のメモリを所有します |
+| **削除の権利** | ソフトデリートではなく、本当の削除。GDPR第17条準拠 |
+| **コンテンツログの禁止** | 実装はナレッジコンテンツをログに記録してはなりません |
+| **出所の追跡** | すべてのエントリが、いつどこで学習されたかを記録します |
+
+---
 
 ## クイックスタート
 
-### ドキュメントの検証
+### 検証
 
 ```bash
 ./validators/validate.sh my-export.json
@@ -112,19 +121,15 @@ oamp-types = "1.0"
 ```rust
 use oamp_types::{KnowledgeEntry, KnowledgeCategory};
 
-// ナレッジエントリを作成
 let entry = KnowledgeEntry::new(
     "user-123",
     KnowledgeCategory::Correction,
-    "unwrap()は絶対に使用しないでください——代わりに?演算子を使用してください",
+    "Never use unwrap() — use ? operator instead",
     0.98,
     "session-42",
 );
 
-// OAMP JSONにシリアライズ
-let json = serde_json::to_string_pretty(&entry)?;
-
-// 検証
+// Validate against spec
 oamp_types::validate::validate_knowledge_entry(&entry)?;
 ```
 
@@ -137,69 +142,114 @@ npm install @oamp/types
 ```typescript
 import { KnowledgeEntry } from '@oamp/types';
 
-// OAMPドキュメントを検証してパース
 const entry = KnowledgeEntry.parse(jsonData);
-
-// 型安全なアクセス
-console.log(entry.category); // "correction"
-console.log(entry.confidence); // 0.98
+console.log(entry.category);   // "correction"
+console.log(entry.confidence);  // 0.98
 ```
 
-## エージェント開発者向け
+---
 
-エージェントにOAMPサポートを追加したいですか？[エージェントガイド](guide-for-agents.md)をご覧ください。
+## リポジトリ構造
 
-要約：
-1. **エクスポート** — 内部メモリタイプをOAMP JSONにマッピング
+```
+spec/v1/
+  oamp-v1.md              権威ある仕様（RFC 2119）
+  *.schema.json            JSON Schema定義（draft-2020-12）
+  examples/                有効なサンプルドキュメント
+
+proto/oamp/v1/             Protocol Buffer定義
+
+reference/
+  rust/                    Rust crate: oamp-types
+  typescript/              npmパッケージ: @oamp/types
+
+validators/
+  validate.sh              CLIドキュメントバリデータ
+  test-fixtures/            有効および無効なテストドキュメント
+
+docs/
+  guide-for-agents.md      エージェントにOAMPを実装する
+  guide-for-backends.md    OAMP準拠のバックエンドを構築する
+  security-guide.md        暗号化、GDPR/CCPA、脅威モデル
+```
+
+---
+
+## OAMPの統合
+
+<table>
+<tr>
+<td width="50%">
+
+### エージェント開発者向け
+
+エージェントにメモリのポータビリティを追加：
+
+1. **エクスポート** — 内部タイプをOAMP JSONにマッピング
 2. **インポート** — OAMP JSONを内部タイプにパース
-3. **検証** — JSON Schemaまたはリファレンスライブラリを使用して準拠を確認
+3. **検証** — スキーマへの準拠を確認
 
-## バックエンド開発者向け
+[エージェントガイドを読む →](guide-for-agents.md)
 
-OAMP準拠のメモリバックエンドを構築したいですか？[バックエンドガイド](guide-for-backends.md)をご覧ください。
+</td>
+<td width="50%">
 
-バックエンドは、ナレッジのCRUD、ユーザーモデルの保存、一括エクスポート/インポートをカバーする9つのRESTエンドポイントを実装する必要があります。
+### バックエンド開発者向け
+
+OAMP準拠のメモリストアを構築：
+
+- 9つのRESTエンドポイント（ナレッジCRUD、ユーザーモデル、エクスポート/インポート）
+- 保存時の暗号化（必須）
+- 検索（FTS、ベクトル、またはハイブリッド — お好みで）
+
+[バックエンドガイドを読む →](guide-for-backends.md)
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 仕様
 
-完全な仕様は[spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md)にあります。準拠レベルを定義するためにRFC 2119の用語（MUST、SHOULD、MAY）を使用しています。
+| | |
+|:---|:---|
+| **現在のバージョン** | v1.0.0 |
+| **スキーマ形式** | JSON Schema (draft-2020-12) + Protocol Buffers |
+| **準拠言語** | RFC 2119 (MUST, SHOULD, MAY) |
+| **完全な仕様** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
 
-### バージョン
+### v2.0の計画
 
-現在：**v1.0.0**
-
-仕様はセマンティックバージョニングに従います。ドキュメントには前方互換性のための`oamp_version`フィールドが含まれます。
-
-### 将来の計画（v2.0）
-
-v2.0の計画（コミュニティのフィードバックに基づく）：
+コミュニティのフィードバックに基づく：
 - セッション成果（構造化されたタスク記録）
 - スキルメトリクス（実行統計）
 - 作業パターン（活動時間、ツールの好み）
 - リアルタイムメモリ同期のためのストリーミングAPI
 
-## セキュリティ
-
-[セキュリティガイド](security-guide.md)で以下を確認してください：
-- 推奨暗号スイート
-- 鍵管理パターン
-- GDPR第17条 / CCPA準拠マッピング
-- メモリ交換の脅威モデル
+---
 
 ## コントリビュート
 
-コントリビュートを歓迎します。以下をお願いします：
-1. 変更を提案する前に仕様を読んでください
-2. すべてのSchema変更にテストフィクスチャを追加してください
+コントリビュートを歓迎します：
+
+1. 変更を提案する前に[仕様](../spec/v1/oamp-v1.md)を読んでください
+2. スキーマ変更にテストフィクスチャを追加してください
 3. RustとTypeScriptの両方のリファレンス実装を更新してください
 4. 既存のコードスタイルに従ってください
 
-## お問い合わせ
+---
 
-ご質問、パートナーシップ、フィードバック：
+<div align="center">
 
-**メール：** contact@dthink.ai
+### お問い合わせ
 
-## ライセンス
+ご質問、パートナーシップ、フィードバック
 
-MIT — [LICENSE](../LICENSE)を参照
+**contact@dthink.ai**
+
+---
+
+**MITライセンス** — [Deep Thinking LLC](https://dthink.ai)
+
+</div>
