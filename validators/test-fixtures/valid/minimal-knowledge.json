@@ -1,0 +1,13 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440010",
+  "user_id": "user-bob-456",
+  "category": "fact",
+  "content": "User works remotely from Tokyo.",
+  "confidence": 0.9,
+  "source": {
+    "session_id": "sess-min-001",
+    "timestamp": "2026-03-01T08:00:00Z"
+  }
+}

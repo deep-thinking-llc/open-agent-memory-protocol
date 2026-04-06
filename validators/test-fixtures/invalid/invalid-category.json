@@ -1,0 +1,13 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440032",
+  "user_id": "user-alice-123",
+  "category": "opinion",
+  "content": "User thinks tabs are better than spaces.",
+  "confidence": 0.7,
+  "source": {
+    "session_id": "sess-inv-003",
+    "timestamp": "2026-03-01T08:00:00Z"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "user_id": "user-alice-123",
+  "category": "preference",
+  "content": "User prefers concise, direct answers without excessive explanation. Responds well to bullet points.",
+  "confidence": 0.85,
+  "source": {
+    "session_id": "sess-2026-03-15-001",
+    "agent_id": "ultrasushitron-v2",
+    "timestamp": "2026-03-15T14:32:00Z"
+  },
+  "decay": {
+    "half_life_days": 140.0,
+    "last_confirmed": "2026-03-28T09:15:00Z"
+  },
+  "tags": ["communication", "response-style"],
+  "metadata": {}
+}

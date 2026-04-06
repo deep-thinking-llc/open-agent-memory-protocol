@@ -1,0 +1,55 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_store",
+  "user_id": "user-alice-123",
+  "entries": [
+    {
+      "oamp_version": "1.0.0",
+      "type": "knowledge_entry",
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "user_id": "user-alice-123",
+      "category": "fact",
+      "content": "User is a senior backend engineer working primarily in Rust and Go",
+      "confidence": 0.95,
+      "source": {
+        "session_id": "sess-001",
+        "timestamp": "2026-03-10T10:00:00Z"
+      },
+      "tags": ["role", "tech-stack"]
+    },
+    {
+      "oamp_version": "1.0.0",
+      "type": "knowledge_entry",
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "user_id": "user-alice-123",
+      "category": "correction",
+      "content": "Do not suggest using unwrap() in Rust code. Always use proper error handling with ? operator or explicit match.",
+      "confidence": 0.98,
+      "source": {
+        "session_id": "sess-003",
+        "timestamp": "2026-03-12T16:45:00Z"
+      },
+      "tags": ["rust", "code-style"]
+    },
+    {
+      "oamp_version": "1.0.0",
+      "type": "knowledge_entry",
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "user_id": "user-alice-123",
+      "category": "pattern",
+      "content": "User typically deploys to staging environment before production, running integration tests between each step",
+      "confidence": 0.75,
+      "source": {
+        "session_id": "sess-005",
+        "timestamp": "2026-03-14T11:30:00Z"
+      },
+      "decay": {
+        "half_life_days": 35.0,
+        "last_confirmed": "2026-03-20T08:00:00Z"
+      },
+      "tags": ["workflow", "deployment"]
+    }
+  ],
+  "exported_at": "2026-03-28T12:00:00Z",
+  "agent_id": "ultrasushitron-v2"
+}

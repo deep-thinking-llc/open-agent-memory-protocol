@@ -1,0 +1,9 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440033",
+  "user_id": "user-alice-123",
+  "category": "preference",
+  "content": "User prefers verbose logging in production.",
+  "confidence": 0.8
+}

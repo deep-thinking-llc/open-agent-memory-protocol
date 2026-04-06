@@ -1,0 +1,15 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440020",
+  "user_id": "user-carol-789",
+  "category": "correction",
+  "content": "Never use var in JavaScript. Always use const or let.",
+  "confidence": 1.0,
+  "source": {
+    "session_id": "sess-nd-001",
+    "agent_id": "code-assistant-v1",
+    "timestamp": "2026-02-20T10:00:00Z"
+  },
+  "tags": ["javascript", "code-style"]
+}
