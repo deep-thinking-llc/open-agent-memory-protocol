@@ -1,0 +1,51 @@
+{
+  "oamp_version": "1.0.0",
+  "type": "user_model",
+  "user_id": "user-alice-123",
+  "model_version": 7,
+  "updated_at": "2026-03-28T12:00:00Z",
+  "communication": {
+    "verbosity": -0.6,
+    "formality": 0.2,
+    "prefers_examples": true,
+    "prefers_explanations": false,
+    "languages": ["en", "ja"]
+  },
+  "expertise": [
+    {
+      "domain": "rust",
+      "level": "expert",
+      "confidence": 0.95,
+      "evidence_sessions": ["sess-001", "sess-003", "sess-005"],
+      "last_observed": "2026-03-28T09:00:00Z"
+    },
+    {
+      "domain": "kubernetes",
+      "level": "advanced",
+      "confidence": 0.80,
+      "evidence_sessions": ["sess-002"],
+      "last_observed": "2026-03-15T14:00:00Z"
+    },
+    {
+      "domain": "react",
+      "level": "novice",
+      "confidence": 0.60,
+      "evidence_sessions": ["sess-004"],
+      "last_observed": "2026-03-20T11:00:00Z"
+    }
+  ],
+  "corrections": [
+    {
+      "what_agent_did": "Suggested using unwrap() for quick prototyping",
+      "what_user_wanted": "Always use proper error handling, even in examples",
+      "context": "Rust code generation",
+      "session_id": "sess-003",
+      "timestamp": "2026-03-12T16:45:00Z"
+    }
+  ],
+  "stated_preferences": [
+    { "key": "theme", "value": "dark", "timestamp": "2026-03-10T10:00:00Z" },
+    { "key": "response-length", "value": "concise", "timestamp": "2026-03-15T14:00:00Z" }
+  ],
+  "metadata": {}
+}
