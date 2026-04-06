@@ -1,0 +1,19 @@
+{
+  "name": "@oamp/types",
+  "version": "1.0.0",
+  "description": "Open Agent Memory Protocol (OAMP) types for TypeScript",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "tsc",
+    "test": "npx vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.22"
+  },
+  "devDependencies": {
+    "typescript": "^5.3",
+    "vitest": "^1.0"
+  }
+}
