@@ -202,4 +202,4 @@ Untuk pertanyaan, perkongsian, atau maklum balas:
 
 ## Lesen
 
-Apache 2.0 — lihat [LICENSE](../LICENSE)
+MIT — lihat [LICENSE](../LICENSE)

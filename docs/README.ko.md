@@ -202,4 +202,4 @@ v2.0 계획 (커뮤니티 피드백 기반):
 
 ## 라이선스
 
-Apache 2.0 — [LICENSE](../LICENSE) 참조
+MIT — [LICENSE](../LICENSE) 참조
