@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oamp.dev/schemas/v1/knowledge-entry.schema.json",
+  "title": "OAMP Knowledge Entry",
+  "description": "A discrete piece of information an agent has learned about a user.",
+  "type": "object",
+  "required": ["oamp_version", "type", "id", "user_id", "category", "content", "confidence", "source"],
+  "properties": {
+    "oamp_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "OAMP spec version. Must be '1.0.0' for this schema."
+    },
+    "type": {
+      "type": "string",
+      "const": "knowledge_entry",
+      "description": "Document type discriminator."
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID v4 unique identifier for this knowledge entry."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the user this knowledge belongs to."
+    },
+    "category": {
+      "type": "string",
+      "enum": ["fact", "preference", "pattern", "correction"],
+      "description": "Classification of the knowledge: fact (objective info), preference (stated/inferred), pattern (recurring behavior), correction (user corrected agent)."
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The knowledge itself, expressed in natural language."
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Agent confidence in this knowledge. 0.0 = no confidence, 1.0 = certain."
+    },
+    "source": {
+      "type": "object",
+      "required": ["session_id", "timestamp"],
+      "description": "Provenance information: where and when this knowledge was acquired.",
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Identifier of the session where this knowledge was learned."
+        },
+        "agent_id": {
+          "type": "string",
+          "description": "Identifier of the agent that produced this knowledge entry."
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime when this knowledge was learned."
+        }
+      },
+      "additionalProperties": false
+    },
+    "decay": {
+      "type": "object",
+      "description": "Temporal decay parameters. If absent, no decay is applied.",
+      "properties": {
+        "half_life_days": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Half-life in days for confidence decay. null means no decay."
+        },
+        "last_confirmed": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime when this knowledge was last confirmed by user behavior."
+        }
+      },
+      "additionalProperties": false
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Free-form tags for filtering and grouping knowledge entries."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Vendor-specific extensions. Compliant implementations must not reject documents with unknown metadata fields.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

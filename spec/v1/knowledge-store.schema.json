@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oamp.dev/schemas/v1/knowledge-store.schema.json",
+  "title": "OAMP Knowledge Store",
+  "description": "A collection of Knowledge Entries packaged for bulk export and import.",
+  "type": "object",
+  "required": ["oamp_version", "type", "user_id", "entries", "exported_at"],
+  "properties": {
+    "oamp_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "OAMP spec version. Must be '1.0.0' for this schema."
+    },
+    "type": {
+      "type": "string",
+      "const": "knowledge_store",
+      "description": "Document type discriminator."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the user all entries belong to."
+    },
+    "entries": {
+      "type": "array",
+      "description": "Array of Knowledge Entry objects. May be empty.",
+      "items": {
+        "$ref": "#/$defs/knowledge_entry_in_store"
+      }
+    },
+    "exported_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of when this store was exported."
+    },
+    "agent_id": {
+      "type": "string",
+      "description": "Identifier of the exporting agent."
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "knowledge_entry_in_store": {
+      "type": "object",
+      "description": "A Knowledge Entry within a Knowledge Store. oamp_version is inherited from the store and MAY be omitted.",
+      "required": ["id", "user_id", "category", "content", "confidence", "source"],
+      "properties": {
+        "oamp_version": {
+          "type": "string",
+          "const": "1.0.0"
+        },
+        "type": {
+          "type": "string",
+          "const": "knowledge_entry"
+        },
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID v4 unique identifier."
+        },
+        "user_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "category": {
+          "type": "string",
+          "enum": ["fact", "preference", "pattern", "correction"]
+        },
+        "content": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0
+        },
+        "source": {
+          "type": "object",
+          "required": ["session_id", "timestamp"],
+          "properties": {
+            "session_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "agent_id": {
+              "type": "string"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        "decay": {
+          "type": "object",
+          "properties": {
+            "half_life_days": {
+              "type": ["number", "null"],
+              "minimum": 0
+            },
+            "last_confirmed": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "additionalProperties": false
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

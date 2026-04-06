@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oamp.dev/schemas/v1/user-model.schema.json",
+  "title": "OAMP User Model",
+  "description": "An agent's evolving structured understanding of a user. All sections beyond the envelope are independently optional.",
+  "type": "object",
+  "required": ["oamp_version", "type", "user_id", "model_version", "updated_at"],
+  "properties": {
+    "oamp_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "OAMP spec version. Must be '1.0.0' for this schema."
+    },
+    "type": {
+      "type": "string",
+      "const": "user_model",
+      "description": "Document type discriminator."
+    },
+    "user_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identifier of the user this model represents."
+    },
+    "model_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Monotonically increasing version number. Backends must reject updates where model_version <= stored version."
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp of last update."
+    },
+    "communication": {
+      "type": "object",
+      "description": "How the user prefers to interact with agents. All fields are optional.",
+      "properties": {
+        "verbosity": {
+          "type": "number",
+          "minimum": -1.0,
+          "maximum": 1.0,
+          "description": "-1.0 = terse, 0.0 = default, 1.0 = verbose."
+        },
+        "formality": {
+          "type": "number",
+          "minimum": -1.0,
+          "maximum": 1.0,
+          "description": "-1.0 = casual, 0.0 = default, 1.0 = formal."
+        },
+        "prefers_examples": {
+          "type": "boolean",
+          "description": "User prefers code or worked examples over abstract explanations."
+        },
+        "prefers_explanations": {
+          "type": "boolean",
+          "description": "User prefers explanations of reasoning over bare answers."
+        },
+        "languages": {
+          "type": "array",
+          "description": "Preferred languages as ISO 639-1 codes (e.g., 'en', 'de').",
+          "items": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 5
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "expertise": {
+      "type": "array",
+      "description": "Domains in which the user has demonstrated knowledge.",
+      "items": {
+        "type": "object",
+        "required": ["domain", "level", "confidence"],
+        "properties": {
+          "domain": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Expertise domain name (e.g., 'rust', 'kubernetes', 'machine-learning')."
+          },
+          "level": {
+            "type": "string",
+            "enum": ["novice", "intermediate", "advanced", "expert"],
+            "description": "Assessed expertise level."
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Agent's confidence in this assessment."
+          },
+          "evidence_sessions": {
+            "type": "array",
+            "description": "Session IDs where this expertise was observed.",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_observed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 datetime of most recent observation of this expertise."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "corrections": {
+      "type": "array",
+      "description": "First-class records of instances where the user corrected the agent. A primary learning signal.",
+      "items": {
+        "type": "object",
+        "required": ["what_agent_did", "what_user_wanted", "session_id", "timestamp"],
+        "properties": {
+          "what_agent_did": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the agent did that was incorrect."
+          },
+          "what_user_wanted": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What the user wanted instead."
+          },
+          "context": {
+            "type": "string",
+            "description": "Optional: when this correction applies (e.g., 'only for architecture discussions')."
+          },
+          "session_id": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Session where the correction occurred."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 datetime when the correction was made."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "stated_preferences": {
+      "type": "array",
+      "description": "Preferences the user has explicitly declared. Higher weight than inferred knowledge.",
+      "items": {
+        "type": "object",
+        "required": ["key", "value", "timestamp"],
+        "properties": {
+          "key": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Preference key (e.g., 'code_style', 'response_length')."
+          },
+          "value": {
+            "type": "string",
+            "description": "Preference value."
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO 8601 datetime when the preference was stated."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Vendor-specific extensions. Compliant implementations must not reject documents with unknown metadata fields.",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}
