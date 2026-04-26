@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Rust Crate](https://img.shields.io/crates/v/oamp-types.svg)](https://crates.io/crates/oamp-types)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
+[![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
-[Specification](spec/v1/oamp-v1.md) | [Rust Crate](reference/rust/) | [TypeScript Package](reference/typescript/) | [Security Guide](docs/security-guide.md)
+[Specification](spec/v1/oamp-v1.md) | [Rust Crate](reference/rust/) | [TypeScript Package](reference/typescript/) | [Python Package](reference/python/) | [Security Guide](docs/security-guide.md)
 
 ---
 
@@ -147,6 +148,33 @@ console.log(entry.category);   // "correction"
 console.log(entry.confidence);  // 0.98
 ```
 
+### Python
+
+```bash
+pip install oamp-types
+```
+
+```python
+from oamp_types import (
+    KnowledgeEntry, KnowledgeCategory, KnowledgeSource,
+    validate_knowledge_entry,
+)
+
+entry = KnowledgeEntry(
+    user_id="user-123",
+    category=KnowledgeCategory.correction,
+    content="Never use unwrap() — use ? operator instead",
+    confidence=0.98,
+    source=KnowledgeSource(session_id="session-42"),
+)
+
+# Validate
+errors = validate_knowledge_entry(entry)
+
+# Serialize to JSON (exclude null optional fields)
+json_str = entry.model_dump_json(exclude_none=True)
+```
+
 ---
 
 ## Repository Structure
@@ -162,6 +190,7 @@ proto/oamp/v1/             Protocol Buffer definitions
 reference/
   rust/                    Rust crate: oamp-types
   typescript/              npm package: @oamp/types
+  python/                  PyPI package: oamp-types
 
 validators/
   validate.sh              CLI document validator
@@ -236,7 +265,8 @@ We welcome contributions:
 1. Read the [spec](spec/v1/oamp-v1.md) before proposing changes
 2. Add test fixtures for schema changes
 3. Update both Rust and TypeScript reference implementations
-4. Follow existing code style
+4. Include Python reference implementation alongside Rust and TypeScript
+5. Follow existing code style
 
 ---
 
