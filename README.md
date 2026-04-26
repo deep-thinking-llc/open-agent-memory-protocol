@@ -9,8 +9,10 @@
 [![Rust Crate](https://img.shields.io/crates/v/oamp-types.svg)](https://crates.io/crates/oamp-types)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
 [![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
+[![Go Reference](https://img.shields.io/badge/go-reference-blue.svg)](reference/go/)
+[![Hex Package](https://img.shields.io/badge/hex-oamp__types-purple.svg)](https://hex.pm/packages/oamp_types)
 
-[Specification](spec/v1/oamp-v1.md) | [Rust Crate](reference/rust/) | [TypeScript Package](reference/typescript/) | [Python Package](reference/python/) | [Security Guide](docs/security-guide.md)
+[Specification](spec/v1/oamp-v1.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
 
 ---
 
@@ -175,9 +177,54 @@ errors = validate_knowledge_entry(entry)
 json_str = entry.model_dump_json(exclude_none=True)
 ```
 
----
+### Go
 
-## Repository Structure
+```bash
+go get github.com/deep-thinking-llc/oamp-go
+```
+
+```go
+import oamp "github.com/deep-thinking-llc/oamp-go"
+
+entry := oamp.NewKnowledgeEntry(
+    "user-123",
+    oamp.KnowledgeCategoryCorrection,
+    "Never use unwrap() — use ? operator instead",
+    0.98,
+    "session-42",
+)
+
+// Validate
+errors := oamp.ValidateKnowledgeEntry(entry)
+```
+
+### Elixir
+
+```elixir
+def deps do
+  [{:oamp_types, "~> 1.0.0"}]
+end
+```
+
+```elixir
+alias OampTypes.Knowledge.Entry
+
+entry = Entry.new(
+  "user-123",
+  :correction,
+  "Never use unwrap() — use ? operator instead",
+  0.98,
+  "session-42"
+)
+
+# Validate
+errors = OampTypes.Validate.validate_knowledge_entry(entry)
+
+# JSON encode
+json = Entry.to_json(entry)
+```
+
+---
 
 ```
 spec/v1/
@@ -191,6 +238,11 @@ reference/
   rust/                    Rust crate: oamp-types
   typescript/              npm package: @oamp/types
   python/                  PyPI package: oamp-types
+  go/                      Go module: oamp-go
+  elixir/                  Hex package: oamp_types
+
+scripts/
+  protoc-gen.sh            Generate code from protobuf definitions
 
 validators/
   validate.sh              CLI document validator
@@ -265,7 +317,7 @@ We welcome contributions:
 1. Read the [spec](spec/v1/oamp-v1.md) before proposing changes
 2. Add test fixtures for schema changes
 3. Update both Rust and TypeScript reference implementations
-4. Include Python reference implementation alongside Rust and TypeScript
+4. Include all reference implementations (Rust, TypeScript, Python, Go, Elixir)
 5. Follow existing code style
 
 ---

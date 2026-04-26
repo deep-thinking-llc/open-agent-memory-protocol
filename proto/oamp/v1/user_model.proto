@@ -1,6 +1,8 @@
 syntax = "proto3";
 package oamp.v1;
 
+option go_package = "github.com/deep-thinking-llc/oamp-go/proto/oamp/v1";
+
 enum ExpertiseLevel {
   EXPERTISE_LEVEL_UNSPECIFIED = 0;
   EXPERTISE_LEVEL_NOVICE = 1;
