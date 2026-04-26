@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Test
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Rust ──────────────────────────────────────────────
+
+      - name: Rust — Run tests
+        working-directory: reference/rust
+        run: cargo test --lib --tests
+
+      # ── TypeScript ───────────────────────────────────────
+
+      - name: TypeScript — Install dependencies
+        working-directory: reference/typescript
+        run: npm ci
+
+      - name: TypeScript — Build
+        working-directory: reference/typescript
+        run: npm run build
+
+      - name: TypeScript — Run tests
+        working-directory: reference/typescript
+        run: npm test
+
+      # ── Python ──────────────────────────────────────────
+
+      - name: Python — Install dependencies
+        working-directory: reference/python
+        run: |-
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -e ".[dev]"
+
+      - name: Python — Run tests
+        working-directory: reference/python
+        run: python3 -m pytest tests/ -v
+
+      # ── Spec validation ─────────────────────────────────
+
+      - name: Validate spec examples (Python)
+        run: |-
+          python3 -c "
+          import json, sys
+          from oamp_types import KnowledgeEntry, KnowledgeStore, UserModel
+
+          for name, cls in [
+              ('knowledge-entry', KnowledgeEntry),
+              ('knowledge-store', KnowledgeStore),
+              ('user-model', UserModel),
+          ]:
+              path = f'spec/v1/examples/{name}.json'
+              with open(path) as f:
+                  data = json.load(f)
+              obj = cls.model_validate(data)
+              print(f'  ✓ {name}: {type(obj).__name__}')
+          "
+        working-directory: reference/python
+
+      # ── Cross-language consistency check ─────────────────
+
+      - name: Cross-language — Check OAMP_VERSION matches across implementations
+        run: |-
+          # Verify version constants are in sync
+          RUST_VER=$(grep 'OAMP_VERSION' reference/rust/src/knowledge.rs | head -1 | sed 's/.*"\([^"]*\)".*/\1/')
+          TS_VER=$(grep "OAMP_VERSION" reference/typescript/src/index.ts | head -1 | sed "s/.*'\([^']*\)'.*/\1/")
+          PY_VER=$(grep "OAMP_VERSION" reference/python/src/oamp_types/__init__.py | head -1 | sed "s/.*\"\([^\"]*\)\".*/\1/")
+          SPEC_VER=$(grep 'oamp_version' spec/v1/oamp-v1.md | head -1 | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' || true)
+
+          echo "Rust:       $RUST_VER"
+          echo "TypeScript: $TS_VER"
+          echo "Python:    $PY_VER"
+          echo "Spec:       $SPEC_VER"
+
+          if [ "$RUST_VER" != "$TS_VER" ] || [ "$RUST_VER" != "$PY_VER" ]; then
+            echo "ERROR: Version mismatch across implementations!"
+            exit 1
+          fi
+          echo "All implementations agree on version: $RUST_VER ✓"

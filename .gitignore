@@ -1,0 +1,37 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.whl
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# === Rust ===
+reference/rust/target/
+
+# === TypeScript / Node ===
+reference/typescript/node_modules/
+reference/typescript/dist/
+
+# === IDE / OS ===
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# === Build artifacts ===
+*.o
+*.a
+*.so
+*.dylib
+*.dll
