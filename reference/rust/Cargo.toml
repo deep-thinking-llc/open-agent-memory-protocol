@@ -1,6 +1,6 @@
 [package]
 name = "oamp-types"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 description = "Open Agent Memory Protocol (OAMP) types for Rust"
 license = "MIT"
