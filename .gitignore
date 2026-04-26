@@ -36,6 +36,9 @@ reference/elixir/deps/
 .DS_Store
 Thumbs.db
 
+# === Design docs (kept out of git) ===
+design/
+
 # === Build artifacts ===
 *.o
 *.a
