@@ -111,6 +111,20 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
+  publish-elixir:
+    name: Publish Elixir package
+    needs: test
+    runs-on: [self-hosted, macOS]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Publish to Hex.pm
+        working-directory: reference/elixir
+        run: mix hex.publish --yes
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_TOKEN }}
+
   create-github-release:
     name: Create GitHub Release
     needs: test
@@ -137,6 +151,7 @@ jobs:
             - 🦀 **Rust** (`oamp-types`): `cargo add oamp-types@${{ steps.version.outputs.VERSION }}`
             - 📦 **npm** (`@deep-thinking/oamp-types`): `npm install @deep-thinking/oamp-types@${{ steps.version.outputs.VERSION }}`
             - 🐍 **PyPI** (`oamp-types`): `pip install oamp-types==${{ steps.version.outputs.VERSION }}`
+            - 🔵 **Hex** (`oamp_types`): `mix deps.update oamp_types`
           draft: false
           prerelease: false
         env:
