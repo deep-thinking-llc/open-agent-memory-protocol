@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
-[规范](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 包](../reference/typescript/) | [安全指南](security-guide.md)
+[规范](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 包](../reference/typescript/) | [Python 包](../reference/python/) | [安全指南](security-guide.md)
 
 ---
 
@@ -147,6 +148,33 @@ console.log(entry.category);   // "correction"
 console.log(entry.confidence);  // 0.98
 ```
 
+### Python
+
+```bash
+pip install oamp-types
+```
+
+```python
+from oamp_types import (
+    KnowledgeEntry, KnowledgeCategory, KnowledgeSource,
+    validate_knowledge_entry,
+)
+
+entry = KnowledgeEntry(
+    user_id="user-123",
+    category=KnowledgeCategory.correction,
+    content="永远不要使用 unwrap()——使用 ? 运算符",
+    confidence=0.98,
+    source=KnowledgeSource(session_id="session-42"),
+)
+
+# 验证
+errors = validate_knowledge_entry(entry)
+
+# 序列化为 JSON（排除空值字段）
+json_str = entry.model_dump_json(exclude_none=True)
+```
+
 ---
 
 ## 仓库结构
@@ -162,6 +190,7 @@ proto/oamp/v1/             Protocol Buffer 定义
 reference/
   rust/                    Rust crate: oamp-types
   typescript/              npm 包: @oamp/types
+  python/                  PyPI 包: oamp-types
 
 validators/
   validate.sh              CLI 文档验证器
@@ -235,7 +264,7 @@ docs/
 
 1. 在提出更改之前阅读[规范](../spec/v1/oamp-v1.md)
 2. 为 Schema 更改添加测试夹具
-3. 同时更新 Rust 和 TypeScript 参考实现
+3. 同时更新 Rust、TypeScript 和 Python 参考实现
 4. 遵循现有的代码风格
 
 ---
