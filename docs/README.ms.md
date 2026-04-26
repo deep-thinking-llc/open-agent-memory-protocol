@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
-[Spesifikasi](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [Pakej TypeScript](../reference/typescript/) | [Panduan Keselamatan](security-guide.md)
+[Spesifikasi](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [Pakej TypeScript](../reference/typescript/) | [Pakej Python](../reference/python/) | [Panduan Keselamatan](security-guide.md)
 
 ---
 
@@ -147,6 +148,33 @@ console.log(entry.category);   // "correction"
 console.log(entry.confidence);  // 0.98
 ```
 
+### Python
+
+```bash
+pip install oamp-types
+```
+
+```python
+from oamp_types import (
+    KnowledgeEntry, KnowledgeCategory, KnowledgeSource,
+    validate_knowledge_entry,
+)
+
+entry = KnowledgeEntry(
+    user_id="user-123",
+    category=KnowledgeCategory.correction,
+    content="Jangan gunakan unwrap() — gunakan operator ?",
+    confidence=0.98,
+    source=KnowledgeSource(session_id="session-42"),
+)
+
+# Pengesahan
+errors = validate_knowledge_entry(entry)
+
+# Serialisasikan kepada JSON (kecualikan medan null)
+json_str = entry.model_dump_json(exclude_none=True)
+```
+
 ---
 
 ## Struktur Repositori
@@ -162,6 +190,7 @@ proto/oamp/v1/             Definisi Protocol Buffer
 reference/
   rust/                    Rust crate: oamp-types
   typescript/              Pakej npm: @oamp/types
+  python/                  Pakej PyPI: oamp-types
 
 validators/
   validate.sh              Pengesah dokumen CLI
@@ -235,7 +264,7 @@ Kami mengalu-alukan sumbangan:
 
 1. Baca [spesifikasi](../spec/v1/oamp-v1.md) sebelum mencadangkan perubahan
 2. Tambah fixture ujian untuk perubahan skema
-3. Kemas kini kedua-dua pelaksanaan rujukan Rust dan TypeScript
+3. Kemas kini semua tiga pelaksanaan rujukan: Rust, TypeScript, dan Python
 4. Ikut gaya kod sedia ada
 
 ---
