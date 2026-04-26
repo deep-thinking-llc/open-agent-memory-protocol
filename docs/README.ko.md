@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
-[사양](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 패키지](../reference/typescript/) | [보안 가이드](security-guide.md)
+[사양](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 패키지](../reference/typescript/) | [Python 패키지](../reference/python/) | [보안 가이드](security-guide.md)
 
 ---
 
@@ -147,6 +148,33 @@ console.log(entry.category);   // "correction"
 console.log(entry.confidence);  // 0.98
 ```
 
+### Python
+
+```bash
+pip install oamp-types
+```
+
+```python
+from oamp_types import (
+    KnowledgeEntry, KnowledgeCategory, KnowledgeSource,
+    validate_knowledge_entry,
+)
+
+entry = KnowledgeEntry(
+    user_id="user-123",
+    category=KnowledgeCategory.correction,
+    content="절대 unwrap()을 사용하지 마세요 — ? 연산자를 사용하세요",
+    confidence=0.98,
+    source=KnowledgeSource(session_id="session-42"),
+)
+
+# 검증
+errors = validate_knowledge_entry(entry)
+
+# JSON으로 직렬화 (null 필드 제외)
+json_str = entry.model_dump_json(exclude_none=True)
+```
+
 ---
 
 ## 저장소 구조
@@ -162,6 +190,7 @@ proto/oamp/v1/             Protocol Buffer 정의
 reference/
   rust/                    Rust crate: oamp-types
   typescript/              npm 패키지: @oamp/types
+  python/                  PyPI 패키지: oamp-types
 
 validators/
   validate.sh              CLI 문서 검증기
@@ -235,7 +264,7 @@ OAMP 호환 메모리 저장소를 구축하세요:
 
 1. 변경 사항을 제안하기 전에 [사양](../spec/v1/oamp-v1.md)을 읽으세요
 2. 스키마 변경에 대한 테스트 픽스처를 추가하세요
-3. Rust와 TypeScript 참조 구현을 모두 업데이트하세요
+3. Rust, TypeScript, Python 참조 구현을 모두 업데이트하세요
 4. 기존 코드 스타일을 따르세요
 
 ---

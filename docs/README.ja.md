@@ -8,8 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
-[仕様](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript パッケージ](../reference/typescript/) | [セキュリティガイド](security-guide.md)
+[仕様](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript パッケージ](../reference/typescript/) | [Python パッケージ](../reference/python/) | [セキュリティガイド](security-guide.md)
 
 ---
 
@@ -147,6 +148,33 @@ console.log(entry.category);   // "correction"
 console.log(entry.confidence);  // 0.98
 ```
 
+### Python
+
+```bash
+pip install oamp-types
+```
+
+```python
+from oamp_types import (
+    KnowledgeEntry, KnowledgeCategory, KnowledgeSource,
+    validate_knowledge_entry,
+)
+
+entry = KnowledgeEntry(
+    user_id="user-123",
+    category=KnowledgeCategory.correction,
+    content="unwrap()は使用しないでください — ?演算子を使用してください",
+    confidence=0.98,
+    source=KnowledgeSource(session_id="session-42"),
+)
+
+# 検証
+errors = validate_knowledge_entry(entry)
+
+# JSONにシリアライズ（null フィールドを除外）
+json_str = entry.model_dump_json(exclude_none=True)
+```
+
 ---
 
 ## リポジトリ構造
@@ -162,6 +190,7 @@ proto/oamp/v1/             Protocol Buffer定義
 reference/
   rust/                    Rust crate: oamp-types
   typescript/              npmパッケージ: @oamp/types
+  python/                  PyPIパッケージ: oamp-types
 
 validators/
   validate.sh              CLIドキュメントバリデータ
@@ -235,7 +264,7 @@ OAMP準拠のメモリストアを構築：
 
 1. 変更を提案する前に[仕様](../spec/v1/oamp-v1.md)を読んでください
 2. スキーマ変更にテストフィクスチャを追加してください
-3. RustとTypeScriptの両方のリファレンス実装を更新してください
+3. Rust、TypeScript、Pythonのすべてのリファレンス実装を更新してください
 4. 既存のコードスタイルに従ってください
 
 ---
