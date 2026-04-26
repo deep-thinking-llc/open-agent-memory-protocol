@@ -20,6 +20,13 @@ reference/rust/target/
 reference/typescript/node_modules/
 reference/typescript/dist/
 
+# === Go ===
+reference/go/go.sum
+
+# === Elixir ===
+reference/elixir/_build/
+reference/elixir/deps/
+
 # === IDE / OS ===
 .idea/
 .vscode/

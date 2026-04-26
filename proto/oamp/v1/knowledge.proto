@@ -1,6 +1,8 @@
 syntax = "proto3";
 package oamp.v1;
 
+option go_package = "github.com/deep-thinking-llc/oamp-go/proto/oamp/v1";
+
 enum KnowledgeCategory {
   KNOWLEDGE_CATEGORY_UNSPECIFIED = 0;
   KNOWLEDGE_CATEGORY_FACT = 1;
