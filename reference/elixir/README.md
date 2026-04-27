@@ -1,6 +1,6 @@
 # Open Agent Memory Protocol — Elixir Reference
 
-Elixir types for the Open Agent Memory Protocol (OAMP) v1.
+Elixir types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) v1.0.0.
 
 ## Installation
 
@@ -13,6 +13,8 @@ def deps do
   ]
 end
 ```
+
+Then fetch: `mix deps.get`
 
 ## Quick Start
 
@@ -28,6 +30,11 @@ entry = OampTypes.Knowledge.Entry.new(
 
 # Validate it
 errors = OampTypes.Validate.validate_knowledge_entry(entry)
+if errors == [] do
+  IO.puts("Valid!")
+else
+  IO.inspect(errors)
+end
 
 # Encode to JSON
 json = OampTypes.Knowledge.Entry.to_json(entry)
@@ -37,23 +44,56 @@ decoded = OampTypes.Knowledge.Entry.from_json(json)
 
 # Create a user model
 model = OampTypes.UserModel.Model.new("user-123")
-```
 
-## Running Tests
-
-```bash
-cd reference/elixir
-mix deps.get
-mix test
+# Set communication profile
+model = %{model | communication: %OampTypes.UserModel.CommunicationProfile{
+  verbosity: -0.6,
+  formality: 0.2,
+  prefers_examples: true,
+  prefers_explanations: false,
+  languages: ["en", "ja"],
+}}
 ```
 
 ## Types
 
-- `OampTypes.Knowledge.Entry` — a discrete piece of information about a user
-- `OampTypes.Knowledge.Store` — bulk export/import collection
-- `OampTypes.UserModel.Model` — structured understanding of a user
-- `OampTypes.KnowledgeCategory` — enum: `:fact`, `:preference`, `:pattern`, `:correction`
-- `OampTypes.ExpertiseLevel` — enum: `:novice`, `:intermediate`, `:advanced`, `:expert`
+### `OampTypes.Knowledge.Entry` — a discrete piece of information about a user
+
+| Field | Elixir Type | Required | Description |
+|-------|-------------|----------|-------------|
+| `oamp_version` | `String.t` | ✅ | Protocol version |
+| `type` | `String.t` | ✅ | `"knowledge_entry"` |
+| `id` | `String.t` | ✅ | UUID v4 (auto-generated) |
+| `user_id` | `String.t` | ✅ | User identifier |
+| `category` | `KnowledgeCategory` | ✅ | `:fact`, `:preference`, `:pattern`, `:correction` |
+| `content` | `String.t` | ✅ | Natural language knowledge |
+| `confidence` | `float` | ✅ | 0.0–1.0 |
+| `source` | `KnowledgeSource.t` | ✅ | Provenance info |
+| `decay` | `KnowledgeDecay.t \| nil` | ❌ | Temporal decay params |
+| `tags` | `[String.t]` | ❌ | Free-form tags |
+| `metadata` | `map` | ❌ | Vendor extensions |
+
+### `OampTypes.UserModel.Model` — structured understanding of a user
+
+| Field | Elixir Type | Required | Description |
+|-------|-------------|----------|-------------|
+| `oamp_version` | `String.t` | ✅ | Protocol version |
+| `type` | `String.t` | ✅ | `"user_model"` |
+| `user_id` | `String.t` | ✅ | User identifier |
+| `model_version` | `non_neg_integer` | ✅ | ≥ 1 |
+| `updated_at` | `DateTime.t` | ✅ | Last update timestamp |
+| `communication` | `CommunicationProfile.t \| nil` | ❌ | Communication preferences |
+| `expertise` | `[ExpertiseDomain.t]` | ❌ | Domain expertise |
+| `corrections` | `[Correction.t]` | ❌ | Agent corrections |
+| `stated_preferences` | `[StatedPreference.t]` | ❌ | Declared preferences |
+| `metadata` | `map` | ❌ | Vendor extensions |
+
+### Enums
+
+```elixir
+@type knowledge_category :: :fact | :preference | :pattern | :correction
+@type expertise_level :: :novice | :intermediate | :advanced | :expert
+```
 
 ## Validation
 
@@ -64,3 +104,63 @@ errors = OampTypes.Validate.validate_knowledge_entry(entry)
 errors = OampTypes.Validate.validate_knowledge_store(store)
 errors = OampTypes.Validate.validate_user_model(model)
 ```
+
+An empty list means valid. Validation checks:
+- Required field presence
+- `oamp_version` is `"1.0.0"`
+- `confidence` in [0.0, 1.0]
+- Communication profiles ranges
+- Required `source.session_id`
+
+## Server Integration
+
+Use the SDK to construct documents, then send them to the reference server over HTTP:
+
+```elixir
+# POST a knowledge entry
+json = OampTypes.Knowledge.Entry.to_json(entry)
+{:ok, %Finch.Response{status: 201, body: body}} =
+  Finch.build(:post, "http://localhost:8000/v1/knowledge",
+    [{"content-type", "application/json"}],
+    json
+  )
+  |> Finch.request(OampTypes.Finch)
+
+# GET and decode
+{:ok, %Finch.Response{status: 200, body: body}} =
+  Finch.build(:get, "http://localhost:8000/v1/knowledge/#{entry.id}")
+  |> Finch.request(OampTypes.Finch)
+
+decoded = OampTypes.Knowledge.Entry.from_json(body)
+```
+
+The server encrypts all content fields at rest using AES-256-GCM (spec §8.1.1).
+Encryption is transparent to the client — you send and receive plaintext JSON.
+
+Key rotation (`POST /v1/admin/keys/rotate`), audit logging, and zeroization on
+delete are handled server-side without SDK involvement.
+
+### Running the Reference Server
+
+```bash
+# From the reference/server/ directory
+python -m oamp_server
+# Or with Docker
+docker compose up
+```
+
+For a full server reference, see:
+- [Server README](https://github.com/deep-thinking-llc/open-agent-memory-protocol/tree/main/reference/server)
+- [Compliance Test Suite](https://github.com/deep-thinking-llc/open-agent-memory-protocol/tree/main/reference/compliance)
+
+## Tests
+
+```bash
+cd reference/elixir
+mix deps.get
+mix test
+```
+
+## License
+
+MIT
