@@ -191,6 +191,9 @@ reference/
   rust/                    Rust crate: oamp-types
   typescript/              npmパッケージ: @oamp/types
   python/                  PyPIパッケージ: oamp-types
+  go/                      Goモジュール: oamp-go
+  elixir/                  Hexパッケージ: oamp_types
+  server/                  FastAPIリファレンスバックエンド
 
 validators/
   validate.sh              CLIドキュメントバリデータ

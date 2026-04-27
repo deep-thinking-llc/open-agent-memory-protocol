@@ -191,6 +191,9 @@ reference/
   rust/                    Rust crate: oamp-types
   typescript/              npm 패키지: @oamp/types
   python/                  PyPI 패키지: oamp-types
+  go/                      Go 모듈: oamp-go
+  elixir/                  Hex 패키지: oamp_types
+  server/                  FastAPI 참조 백엔드
 
 validators/
   validate.sh              CLI 문서 검증기
