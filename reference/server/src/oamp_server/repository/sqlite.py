@@ -21,6 +21,7 @@ from oamp_types import KnowledgeEntry, KnowledgeStore, UserModel
 
 from .base import Repository
 from ..encryption import KeyProvider, LocalKeyProvider, encrypt, decrypt
+from ..middleware.audit import log_audit, init_audit_log
 
 SCHEMA = """
 -- Knowledge entries table (Phase 3: encrypted columns)
@@ -109,7 +110,6 @@ class SQLiteRepository(Repository):
 
         # Initialize audit log table if enabled
         if self._audit_enabled:
-            from ..middleware.audit import init_audit_log
             await init_audit_log(self._db)
 
         await self._db.commit()
@@ -150,16 +150,30 @@ class SQLiteRepository(Repository):
     async def _audit(
         self,
         action: str,
-        user_id: str,
+        user_id: str | None = None,
         entry_id: str | None = None,
         detail: str | None = None,
+        actor: str | None = None,
     ) -> None:
         """Log an audit event if audit logging is enabled."""
-        if not self._audit_enabled:
+        if not self._audit_enabled or self._db is None:
             return
-        db = self._ensure_connected()
-        from ..middleware.audit import log_audit
-        await log_audit(db, action, user_id, entry_id, detail=detail)
+        await log_audit(
+            self._db, action,
+            user_id=user_id or "system",
+            entry_id=entry_id, detail=detail, actor=actor,
+        )
+
+    async def log_audit_event(
+        self,
+        action: str,
+        user_id: str | None = None,
+        entry_id: str | None = None,
+        detail: str | None = None,
+        actor: str | None = None,
+    ) -> None:
+        """Public method to log an audit event from outside the repository."""
+        await self._audit(action, user_id=user_id, entry_id=entry_id, detail=detail, actor=actor)
 
     # ── Knowledge Entries ─────────────────────────────
 
@@ -252,7 +266,7 @@ class SQLiteRepository(Repository):
             return False
 
         # Zeroization: overwrite encrypted columns with zeros before delete
-        # per spec §8.2.7
+        # per spec §8.2.7. All operations in a single transaction.
         await db.execute(
             """UPDATE knowledge_entries
                SET content_enc = 'ZEROED',
@@ -263,9 +277,7 @@ class SQLiteRepository(Repository):
                WHERE id = ?""",
             (entry_id,),
         )
-        await db.commit()
-
-        # Now delete from both tables
+        # Delete from both tables
         await db.execute(
             "DELETE FROM knowledge_fts WHERE entry_id = ?", (entry_id,)
         )
@@ -557,7 +569,8 @@ class SQLiteRepository(Repository):
     async def delete_user_model(self, user_id: str) -> bool:
         db = self._ensure_connected()
 
-        # Zeroize encrypted columns before delete (spec §8.2.7)
+        # Zeroize encrypted columns before delete (spec §8.2.7).
+        # All operations in a single transaction.
         await db.execute(
             """UPDATE user_models
                SET communication_enc = 'ZEROED',
@@ -568,8 +581,6 @@ class SQLiteRepository(Repository):
                WHERE user_id = ?""",
             (user_id,),
         )
-        await db.commit()
-
         # Delete knowledge entries and FTS entries for this user
         await db.execute(
             "DELETE FROM knowledge_fts WHERE user_id = ?", (user_id,)

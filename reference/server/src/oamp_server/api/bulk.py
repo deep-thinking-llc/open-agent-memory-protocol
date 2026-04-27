@@ -31,6 +31,7 @@ def _get_user_model_service(request: Request) -> UserModelService:
 @router.post("/export")
 async def export_knowledge(
     body: ExportRequest,
+    request: Request,
     knowledge_service: KnowledgeService = Depends(_get_knowledge_service),
     user_model_service: UserModelService = Depends(_get_user_model_service),
 ) -> dict[str, Any]:
@@ -39,12 +40,15 @@ async def export_knowledge(
     Per spec Section 6.4: POST /v1/export with { "user_id": "string" }.
     Returns all KnowledgeEntries plus the UserModel in metadata if present.
     """
+    # Audit export (spec §8.2.6)
+    await request.app.state.repo.log_audit_event("export", body.user_id)
     return await knowledge_service.export_user(body.user_id, user_model_service)
 
 
 @router.post("/import")
 async def import_knowledge(
     store: KnowledgeStore,
+    request: Request,
     service: KnowledgeService = Depends(_get_knowledge_service),
 ) -> dict[str, Any]:
     """Import a KnowledgeStore, creating all entries.
@@ -53,6 +57,8 @@ async def import_knowledge(
     Returns a summary of imported, skipped, and rejected entries.
     """
     imported_count = await service.import_store(store)
+    # Audit import (spec §8.2.6)
+    await request.app.state.repo.log_audit_event("import", store.user_id, detail=f"imported:{imported_count}")
     return {
         "imported": imported_count,
         "skipped": 0,

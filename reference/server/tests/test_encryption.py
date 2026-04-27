@@ -613,6 +613,57 @@ class TestAuditLog:
         assert len(create_logs) > 0
         assert create_logs[0]["entry_id"] == EID_AUD5
 
+    async def test_audit_log_records_export(self, audit_client, audit_app):
+        """Export operations should be audited."""
+        entry = _make_entry(
+            entry_id=EID_AUD5,
+            user_id="user-audit-export",
+            content="Export audit test",
+        )
+        await audit_client.post("/v1/knowledge", json=entry)
+
+        resp = await audit_client.post("/v1/export", json={"user_id": "user-audit-export"})
+        assert resp.status_code == 200
+
+        resp = await audit_client.get("/v1/admin/audit", params={"user_id": "user-audit-export"})
+        logs = resp.json()
+        assert any(log["action"] == "export" for log in logs)
+
+    async def test_audit_log_records_import(self, audit_client, audit_app):
+        """Import operations should be audited."""
+        store = {
+            "oamp_version": "1.0.0",
+            "type": "knowledge_store",
+            "user_id": "user-audit-import",
+            "entries": [
+                _make_entry(
+                    entry_id="e6000006-e29b-41d4-a716-446655440006",
+                    user_id="user-audit-import",
+                    content="Import audit test",
+                )
+            ],
+        }
+        resp = await audit_client.post("/v1/import", json=store)
+        assert resp.status_code == 200
+
+        resp = await audit_client.get("/v1/admin/audit", params={"user_id": "user-audit-import"})
+        logs = resp.json()
+        assert any(log["action"] == "import" for log in logs)
+
+    async def test_audit_log_records_key_rotation(self, audit_client, audit_app):
+        """Key rotation should be audited."""
+        resp = await audit_client.post("/v1/admin/keys/rotate")
+        assert resp.status_code == 200
+
+        resp = await audit_client.get("/v1/admin/audit")
+        logs = resp.json()
+        assert any(log["action"] == "rotate_key" for log in logs)
+        # Verify it has a detail with new key_id
+        rotate_logs = [l for l in logs if l["action"] == "rotate_key"]
+        assert len(rotate_logs) > 0
+        assert rotate_logs[0]["detail"] is not None
+        assert "new_key_id:" in rotate_logs[0]["detail"]
+
 
 # ── Zeroization ──────────────────────────────────────────────────────
 

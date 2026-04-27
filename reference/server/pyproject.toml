@@ -2,7 +2,7 @@
 name = "oamp-server"
 version = "1.0.1"
 description = "OAMP v1 reference backend server"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",

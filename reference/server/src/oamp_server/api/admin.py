@@ -24,6 +24,12 @@ async def rotate_key(
     will use the new key.
     """
     new_key = provider.rotate()
+    # Audit key rotation
+    await request.app.state.repo.log_audit_event(
+        "rotate_key",
+        actor="system",
+        detail=f"new_key_id:{new_key.key_id}",
+    )
     return {
         "key_id": new_key.key_id,
         "message": "Encryption key rotated successfully. New writes will use this key.",
