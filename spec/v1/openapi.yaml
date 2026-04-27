@@ -1,0 +1,550 @@
+openapi: "3.1.0"
+info:
+  title: Open Agent Memory Protocol API
+  description: |
+    OAMP defines a standard format for storing, exchanging, and querying
+    memory data between AI agents and memory backends.
+
+    All content fields are encrypted at rest using AES-256-GCM (spec §8.1.1).
+    Encryption is transparent to API clients — you send and receive plaintext JSON.
+  version: "1.0.0"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    email: contact@dthink.ai
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://oamp.example.com
+    description: Production (replace with your server URL)
+
+tags:
+  - name: Knowledge
+    description: Knowledge entry CRUD, list, search
+  - name: User Model
+    description: User model CRUD
+  - name: Bulk
+    description: Export and import operations
+  - name: Admin
+    description: Key rotation and audit log query
+
+# ── Paths ────────────────────────────────────────────────────────────
+
+paths:
+  /v1/knowledge:
+    post:
+      tags: [Knowledge]
+      summary: Store a new knowledge entry
+      description: |
+        Creates a new KnowledgeEntry. Returns 201 on success.
+        Returns 409 if an entry with the same ID already exists.
+        All content fields are encrypted at rest on the server.
+      operationId: createKnowledge
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeEntry'
+      responses:
+        "201":
+          description: Knowledge entry created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "409":
+          description: Duplicate entry ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      tags: [Knowledge]
+      summary: List or search knowledge entries
+      description: |
+        List entries for a user, with optional category filter.
+        When `query` is provided, performs full-text search scoped to the user.
+      operationId: listOrSearchKnowledge
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Scope results to this user
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Full-text search query (FTS5 with Porter stemming)
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [fact, preference, pattern, correction]
+          description: Filter by knowledge category
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+          description: Maximum entries to return
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+          description: Number of entries to skip
+      responses:
+        "200":
+          description: List of knowledge entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/KnowledgeEntry'
+
+  /v1/knowledge/{entry_id}:
+    get:
+      tags: [Knowledge]
+      summary: Retrieve a knowledge entry by ID
+      operationId: getKnowledge
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID v4 of the knowledge entry
+      responses:
+        "200":
+          description: Knowledge entry found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        "404":
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [Knowledge]
+      summary: Delete a knowledge entry (permanent)
+      description: |
+        Permanently deletes a knowledge entry. Returns 204 with empty body.
+        Not a soft-delete — data is irrecoverable after this call.
+        Encrypted columns are zeroized before deletion (spec §8.2.7).
+      operationId: deleteKnowledge
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Entry deleted (no content)
+        "404":
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Knowledge]
+      summary: Update confidence, decay, or tags on a knowledge entry
+      description: |
+        Updates allowed fields on a knowledge entry.
+        Fields `id`, `user_id`, `category`, `source`, `content`, `oamp_version`,
+        and `type` are forbidden and will return 400.
+      operationId: updateKnowledge
+      parameters:
+        - name: entry_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confidence:
+                  type: number
+                  minimum: 0.0
+                  maximum: 1.0
+                  description: New confidence score
+                decay:
+                  type: object
+                  properties:
+                    half_life_days:
+                      type: number
+                      description: Exponential half-life for confidence decay
+                    last_confirmed:
+                      type: string
+                      format: date-time
+                      description: ISO 8601 timestamp of last confirmation
+                  description: Decay parameters update
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  description: Replace all tags
+              description: Only confidence, decay, and tags are patchable
+      responses:
+        "200":
+          description: Entry updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntry'
+        "400":
+          description: Validation error or forbidden field
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/user-model:
+    post:
+      tags: [User Model]
+      summary: Create or update a user model
+      description: |
+        Creates a new UserModel (201) or updates an existing one with a
+        higher model_version (200). Returns 409 if model_version is not
+        monotonically increasing.
+      operationId: createOrUpdateUserModel
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserModel'
+      responses:
+        "201":
+          description: User model created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+        "200":
+          description: User model updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "409":
+          description: Version conflict (model_version <= stored)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/user-model/{user_id}:
+    get:
+      tags: [User Model]
+      summary: Retrieve a user model by user ID
+      operationId: getUserModel
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User identifier
+      responses:
+        "200":
+          description: User model found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserModel'
+        "404":
+          description: User model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      tags: [User Model]
+      summary: Delete a user model and all associated knowledge
+      description: |
+        Permanently deletes the user model and ALL associated knowledge
+        entries for this user. Returns 204 with empty body.
+        Not reversible — all data for this user is permanently removed.
+      operationId: deleteUserModel
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: User and all data deleted (no content)
+        "404":
+          description: User model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/export:
+    post:
+      tags: [Bulk]
+      summary: Export all data for a user
+      description: |
+        Returns a KnowledgeStore containing all knowledge entries for the
+        specified user. If a UserModel exists for this user, it is included
+        in the `metadata.user_model` field.
+      operationId: exportData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user_id]
+              properties:
+                user_id:
+                  type: string
+                  description: User to export
+      responses:
+        "200":
+          description: Complete user data export
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeStore'
+
+  /v1/import:
+    post:
+      tags: [Bulk]
+      summary: Import a KnowledgeStore
+      description: |
+        Imports all entries from a KnowledgeStore document.
+        Entries with new IDs are created. Entries with existing IDs use
+        confidence-based resolution. Returns a summary of imported, skipped,
+        and rejected entries. No entries are silently dropped.
+      operationId: importData
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KnowledgeStore'
+      responses:
+        "200":
+          description: Import summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ImportResult'
+        "400":
+          description: Validation error in one or more entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /v1/admin/keys/rotate:
+    post:
+      tags: [Admin]
+      summary: Rotate the active encryption key
+      description: |
+        Generates a new encryption key and marks it as active.
+        Old data remains decryptable with the previous key (stored key_id
+        per row). New writes use the new key.
+      operationId: rotateKey
+      responses:
+        "200":
+          description: Key rotated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key_id:
+                    type: string
+                    description: ID of the new active key
+                  message:
+                    type: string
+                example:
+                  key_id: "a1b2c3d4e5f6g7h8"
+                  message: "Encryption key rotated successfully. New writes will use this key."
+
+  /v1/admin/audit:
+    get:
+      tags: [Admin]
+      summary: Query audit log entries
+      description: |
+        Retrieves audit log entries. Audit logs contain operation metadata
+        (action, user_id, entry_id, timestamp) but NEVER knowledge content
+        (spec §8.2.6).
+      operationId: getAuditLog
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter to a specific user
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 100
+            minimum: 1
+            maximum: 1000
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEntry'
+
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+# ── Components ──────────────────────────────────────────────────────
+
+components:
+  schemas:
+    KnowledgeEntry:
+      $ref: "./knowledge-entry.schema.json"
+
+    KnowledgeStore:
+      $ref: "./knowledge-store.schema.json"
+
+    UserModel:
+      $ref: "./user-model.schema.json"
+
+    Error:
+      type: object
+      required: [error, code]
+      properties:
+        error:
+          type: string
+          description: Human-readable error message
+        code:
+          type: string
+          description: Machine-readable error code
+      examples:
+        - error: "KnowledgeEntry not found: 550e8400-e29b-41d4-a716-446655440000"
+          code: "NOT_FOUND"
+        - error: "model_version 5 must be > 7"
+          code: "VERSION_CONFLICT"
+        - error: "confidence must be 0.0-1.0, got 1.5"
+          code: "VALIDATION_ERROR"
+
+    ImportResult:
+      type: object
+      required: [imported, skipped, rejected, user_id]
+      properties:
+        imported:
+          type: integer
+          description: Number of entries successfully imported
+        skipped:
+          type: integer
+          description: Number of entries skipped (duplicate ID, lower confidence)
+        rejected:
+          type: integer
+          description: Number of entries rejected due to validation failure
+        user_id:
+          type: string
+          description: User whose data was imported
+
+    AuditEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Auto-incrementing audit log ID
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO 8601 timestamp of the operation
+        action:
+          type: string
+          enum: [create, read, update, delete, export, import, rotate_key]
+          description: Type of operation performed
+        user_id:
+          type: string
+          description: User whose data was affected
+        entry_id:
+          type: string
+          nullable: true
+          description: Knowledge entry ID (null for bulk operations)
+        actor:
+          type: string
+          nullable: true
+          description: Agent or system that initiated the action
+        detail:
+          type: string
+          nullable: true
+          description: Additional context (never knowledge content)
