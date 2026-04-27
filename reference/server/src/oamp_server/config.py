@@ -26,3 +26,20 @@ class Settings:
     )
     max_page_size: int = 200
     default_page_size: int = 50
+
+    # Encryption settings (Phase 3: spec §8.1.1)
+    encryption_key_dir: str = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_ENCRYPTION_KEY_DIR", "./keys"
+        )
+    )
+    encryption_provider: str = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_ENCRYPTION_PROVIDER", "local"
+        )
+    )
+    audit_log: bool = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_AUDIT_LOG", "true"
+        ).lower() in ("true", "1", "yes")
+    )

@@ -2,13 +2,14 @@
 name = "oamp-server"
 version = "1.0.1"
 description = "OAMP v1 reference backend server"
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 dependencies = [
     "fastapi>=0.110",
     "uvicorn[standard]>=0.29",
     "oamp-types>=1.0.0",
     "aiosqlite>=0.20",
     "pydantic>=2.0",
+    "cryptography>=42.0",
 ]
 
 [project.optional-dependencies]
@@ -20,7 +21,7 @@ dev = [
 
 [build-system]
 requires = ["setuptools>=68.0"]
-build-backend = "setuptools.backends._legacy:_Backend"
+build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

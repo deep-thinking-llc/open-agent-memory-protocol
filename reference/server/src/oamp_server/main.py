@@ -8,9 +8,10 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from .api import bulk, knowledge, user_model
+from .api import admin, bulk, knowledge, user_model
 from .api.errors import ErrorResponse, OampError
 from .config import Settings
+from .encryption import LocalKeyProvider
 from .repository import SQLiteRepository
 from .services import KnowledgeService, UserModelService
 
@@ -23,12 +24,21 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        # Startup: initialize repository
-        repo = SQLiteRepository(db_path=settings.db_path)
+        # Startup: initialize encryption key provider
+        key_provider = LocalKeyProvider(key_dir=settings.encryption_key_dir)
+
+        # Startup: initialize repository with encryption
+        repo = SQLiteRepository(
+            db_path=settings.db_path,
+            key_provider=key_provider,
+            audit_enabled=settings.audit_log,
+        )
         await repo.initialize()
         app.state.repo = repo
         app.state.knowledge_service = KnowledgeService(repo)
         app.state.user_model_service = UserModelService(repo)
+        app.state.settings = settings
+        app.state.key_provider = key_provider
         yield
         # Shutdown: close repository
         await repo.close()
@@ -50,6 +60,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(knowledge.router, prefix="/v1")
     app.include_router(user_model.router, prefix="/v1")
     app.include_router(bulk.router, prefix="/v1")
+    app.include_router(admin.router, prefix="/v1")
 
     # ── Error handlers ─────────────────────────────────
 

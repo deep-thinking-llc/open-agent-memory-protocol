@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import tempfile
+from pathlib import Path
+
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -10,9 +13,21 @@ from oamp_server import create_app, Settings
 
 
 @pytest.fixture
-def settings():
-    """Settings with in-memory SQLite for testing."""
-    return Settings(db_path=":memory:")
+def key_dir(tmp_path):
+    """Create a temporary directory for encryption keys."""
+    keys = tmp_path / "keys"
+    keys.mkdir()
+    return str(keys)
+
+
+@pytest.fixture
+def settings(key_dir):
+    """Settings with in-memory SQLite for testing and temp key dir."""
+    return Settings(
+        db_path=":memory:",
+        encryption_key_dir=key_dir,
+        audit_log=False,  # Disable audit for most tests
+    )
 
 
 @pytest_asyncio.fixture
