@@ -34,7 +34,7 @@ PYTHONPATH=src pytest tests/ -v
 | Method | Endpoint | Description |
 |--------|----------|-------------|
 | `POST` | `/v1/knowledge` | Create a KnowledgeEntry (201) |
-| `GET` | `/v1/knowledge?user_id=...` | List entries for a user |
+| `GET` | `/v1/knowledge?user_id=...` | List/search entries (`query=` for FTS5 search, `category=` filter, pagination) |
 | `GET` | `/v1/knowledge/search?q=...&user_id=...` | Full-text search |
 | `GET` | `/v1/knowledge/{entry_id}` | Get entry by ID |
 | `PATCH` | `/v1/knowledge/{entry_id}` | Update confidence/tags/decay |
@@ -52,7 +52,7 @@ PYTHONPATH=src pytest tests/ -v
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/v1/export/{user_id}` | Export all knowledge as KnowledgeStore |
+| `POST` | `/v1/export` | Export all knowledge as KnowledgeStore (includes UserModel in metadata) |
 | `POST` | `/v1/import` | Import a KnowledgeStore |
 
 ### Health
@@ -91,15 +91,16 @@ src/oamp_server/
 | `OAMP_PORT` | `8000` | Bind port |
 | `OAMP_LOG_LEVEL` | `info` | Log level |
 
-## Test Suite
+## Test Suite (95 tests)
 
-59 tests covering:
-
-- **CRUD operations**: Create, read, update, delete for knowledge entries and user models
-- **Search**: FTS5 full-text search with Porter stemming, case-insensitive, scoped to user
-- **Validation**: Error format (Section 6.8), forbidden PATCH fields, version conflicts
-- **Bulk**: Export/import round-trips, spec example validation
-- **Edge cases**: Empty stores, nonexistent resources, duplicate IDs
+- **Knowledge CRUD** (20): create with all optionals, duplicate 409, get, delete + 204 empty body, list, pagination, category filter
+- **FTS5 search** (6): Porter stemming, multi-word, case-insensitive, scoped, category filter, pagination, negative limit
+- **User model CRUD** (12): 201 on create, 200 on update, version monotonicity (409), model_version >= 1, delete + remove knowledge
+- **Validation & PATCH** (15): error format (Section 6.8), forbidden PATCH fields (id/user/category/source/content), duplicate ID 409, version conflict 409, 404 handling
+- **Bulk export/import** (9): POST /v1/export, POST /v1/import, UserModel in metadata, skipped/rejected counts, spec examples
+- **Health & spec round-trips** (14): health check, spec JSON files validated through API, pre-populated E2E scenarios, export/import cycle
+- **SDK integration** (10): KnowledgeEntry round-trips (all categories, all optionals), UserModel round-trips (all expertise levels), KnowledgeStore import/export, validation alignment
+- **Error compliance**: 409 duplicate, 409 version conflict, 400 validation, 404 not found, 204 delete, FORBIDDEN_PATCH
 
 Run with:
 ```bash

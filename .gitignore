@@ -44,4 +44,4 @@ design/
 *.a
 *.so
 *.dylib
-*.dll
+*.dllmise.toml

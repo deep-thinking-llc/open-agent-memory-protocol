@@ -1,4 +1,7 @@
-"""Tests for error handling compliance."""
+"""Tests for error handling compliance and PATCH endpoint.
+
+Spec compliance: Section 6.2 (PATCH), Section 6.8 (Error Responses)
+"""
 
 from __future__ import annotations
 
@@ -28,19 +31,26 @@ class TestErrorFormat:
         model = make_user_model(user_id="user-err", model_version=3)
         await client.post("/v1/user-model", json=model)
 
-        # Try with same version
         model_same = make_user_model(user_id="user-err", model_version=3)
         resp = await client.post("/v1/user-model", json=model_same)
         assert resp.status_code == 409
         body = resp.json()
         assert body["code"] == "VERSION_CONFLICT"
 
+    async def test_error_format_on_duplicate_id(self, client, make_knowledge_entry):
+        entry = make_knowledge_entry(entry_id="d0000001-e29b-41d4-a716-446655440001")
+        await client.post("/v1/knowledge", json=entry)
+        resp = await client.post("/v1/knowledge", json=entry)
+        assert resp.status_code == 409
+        body = resp.json()
+        assert "error" in body
+        assert "code" in body
+
     async def test_error_format_on_forbidden_patch(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
         resp = await client.post("/v1/knowledge", json=entry)
         assert resp.status_code == 201
 
-        # Try to patch a forbidden field
         resp = await client.patch(
             f"/v1/knowledge/{entry['id']}",
             json={"category": "preference"},  # category is forbidden to patch
@@ -51,7 +61,11 @@ class TestErrorFormat:
 
 
 class TestPatchKnowledge:
-    """PATCH /v1/knowledge/:id"""
+    """PATCH /v1/knowledge/:id — spec Section 6.2
+
+    Only confidence, decay, and tags may be patched.
+    Fields id, user_id, category, source are forbidden.
+    """
 
     async def test_patch_confidence(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
@@ -75,10 +89,21 @@ class TestPatchKnowledge:
         assert resp.status_code == 200
         assert resp.json()["tags"] == ["updated", "tags"]
 
-    async def test_patch_forbidden_id(self, client, make_knowledge_entry):
+    async def test_patch_decay(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
         await client.post("/v1/knowledge", json=entry)
 
+        resp = await client.patch(
+            f"/v1/knowledge/{entry['id']}",
+            json={"decay": {"half_life_days": 50.0, "last_confirmed": "2026-05-01T12:00:00Z"}},
+        )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["decay"]["half_life_days"] == 50.0
+
+    async def test_patch_forbidden_id(self, client, make_knowledge_entry):
+        entry = make_knowledge_entry()
+        await client.post("/v1/knowledge", json=entry)
         resp = await client.patch(
             f"/v1/knowledge/{entry['id']}",
             json={"id": "new-id"},
@@ -88,7 +113,6 @@ class TestPatchKnowledge:
     async def test_patch_forbidden_user_id(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
         await client.post("/v1/knowledge", json=entry)
-
         resp = await client.patch(
             f"/v1/knowledge/{entry['id']}",
             json={"user_id": "different-user"},
@@ -98,7 +122,6 @@ class TestPatchKnowledge:
     async def test_patch_forbidden_category(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
         await client.post("/v1/knowledge", json=entry)
-
         resp = await client.patch(
             f"/v1/knowledge/{entry['id']}",
             json={"category": "preference"},
@@ -108,10 +131,19 @@ class TestPatchKnowledge:
     async def test_patch_forbidden_source(self, client, make_knowledge_entry):
         entry = make_knowledge_entry()
         await client.post("/v1/knowledge", json=entry)
-
         resp = await client.patch(
             f"/v1/knowledge/{entry['id']}",
             json={"source": {"session_id": "new-sess"}},
+        )
+        assert resp.status_code == 400
+
+    async def test_patch_forbidden_content(self, client, make_knowledge_entry):
+        """Content is immutable — should be forbidden to patch."""
+        entry = make_knowledge_entry()
+        await client.post("/v1/knowledge", json=entry)
+        resp = await client.patch(
+            f"/v1/knowledge/{entry['id']}",
+            json={"content": "new content"},
         )
         assert resp.status_code == 400
 

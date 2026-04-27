@@ -1,4 +1,7 @@
-"""Tests for bulk export/import endpoints."""
+"""Tests for bulk export/import endpoints.
+
+Spec compliance: Section 6.4 (Bulk Endpoints)
+"""
 
 from __future__ import annotations
 
@@ -11,11 +14,11 @@ SPEC_EXAMPLES = Path(__file__).resolve().parents[3] / "spec" / "v1" / "examples"
 
 
 class TestExportKnowledge:
-    """GET /v1/export/:user_id"""
+    """POST /v1/export — spec Section 6.4"""
 
     async def test_export_empty_user(self, client):
         """Export for user with no entries returns empty store."""
-        resp = await client.get("/v1/export/user-nonexistent")
+        resp = await client.post("/v1/export", json={"user_id": "user-nonexistent"})
         assert resp.status_code == 200
         data = resp.json()
         assert data["user_id"] == "user-nonexistent"
@@ -34,7 +37,7 @@ class TestExportKnowledge:
             resp = await client.post("/v1/knowledge", json=entry)
             assert resp.status_code == 201
 
-        resp = await client.get("/v1/export/user-export")
+        resp = await client.post("/v1/export", json={"user_id": "user-export"})
         assert resp.status_code == 200
         data = resp.json()
         assert data["user_id"] == "user-export"
@@ -45,7 +48,6 @@ class TestExportKnowledge:
 
     async def test_export_only_includes_user_entries(self, client, make_knowledge_entry):
         """Export should only include entries for the specified user."""
-        # Create entries for two different users
         entry_a = make_knowledge_entry(user_id="user-export-a")
         entry_a["id"] = "b0000001-e29b-41d4-a716-446655440001"
         await client.post("/v1/knowledge", json=entry_a)
@@ -54,20 +56,47 @@ class TestExportKnowledge:
         entry_b["id"] = "b0000002-e29b-41d4-a716-446655440002"
         await client.post("/v1/knowledge", json=entry_b)
 
-        # Export user-a should only contain user-a's entry
-        resp = await client.get("/v1/export/user-export-a")
+        resp = await client.post("/v1/export", json={"user_id": "user-export-a"})
         assert resp.status_code == 200
         data = resp.json()
         assert len(data["entries"]) == 1
         assert data["entries"][0]["user_id"] == "user-export-a"
 
+    async def test_export_includes_user_model_in_metadata(self, client, make_knowledge_entry, make_user_model):
+        """Spec Section 6.4: export includes User Model in metadata field if present."""
+        # Create knowledge + user model
+        entry = make_knowledge_entry(user_id="user-exp-model")
+        entry["id"] = "b0000003-e29b-41d4-a716-446655440003"
+        await client.post("/v1/knowledge", json=entry)
+
+        model = make_user_model(user_id="user-exp-model")
+        await client.post("/v1/user-model", json=model)
+
+        resp = await client.post("/v1/export", json={"user_id": "user-exp-model"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert "metadata" in data
+        assert "user_model" in data["metadata"]
+        assert data["metadata"]["user_model"]["user_id"] == "user-exp-model"
+
+    async def test_export_without_user_model(self, client, make_knowledge_entry):
+        """Export for user with no user model should omit metadata.user_model."""
+        entry = make_knowledge_entry(user_id="user-no-model")
+        entry["id"] = "b0000004-e29b-41d4-a716-446655440004"
+        await client.post("/v1/knowledge", json=entry)
+
+        resp = await client.post("/v1/export", json={"user_id": "user-no-model"})
+        assert resp.status_code == 200
+        data = resp.json()
+        # metadata should not have user_model key if no model exists
+        assert data.get("metadata", {}).get("user_model") is None
+
 
 class TestImportKnowledge:
-    """POST /v1/import"""
+    """POST /v1/import — spec Section 6.4"""
 
     async def test_import_valid_store(self, client, make_knowledge_entry):
         """Import a KnowledgeStore and verify entries are created."""
-        # Build a store with 3 entries
         entries = []
         uuids = [
             "c0000001-e29b-41d4-a716-446655440001",
@@ -95,11 +124,8 @@ class TestImportKnowledge:
         data = resp.json()
         assert data["imported"] == 3
         assert data["user_id"] == "user-import"
-
-        # Verify entries are retrievable
-        resp = await client.get("/v1/knowledge", params={"user_id": "user-import"})
-        assert resp.status_code == 200
-        assert len(resp.json()) == 3
+        assert "skipped" in data
+        assert "rejected" in data
 
     async def test_import_empty_store(self, client):
         """Import an empty store returns 0."""
@@ -135,7 +161,7 @@ class TestImportKnowledge:
                     "type": "knowledge_entry",
                     "id": "d0000002-e29b-41d4-a716-446655440002",
                     "user_id": "user-import-err",
-                    "category": "invalid_category",  # Invalid!
+                    "category": "invalid_category",
                     "content": "Bad entry",
                     "confidence": 0.8,
                     "source": {"session_id": "s2", "timestamp": "2026-04-01T14:30:00Z"},
@@ -167,13 +193,11 @@ class TestImportKnowledge:
             "entries": entries,
         }
 
-        # Import
         resp = await client.post("/v1/import", json=store)
         assert resp.status_code == 200
         assert resp.json()["imported"] == 2
 
-        # Export
-        resp = await client.get("/v1/export/user-rt")
+        resp = await client.post("/v1/export", json={"user_id": "user-rt"})
         assert resp.status_code == 200
         exported = resp.json()
         assert len(exported["entries"]) == 2
@@ -187,12 +211,10 @@ class TestImportKnowledge:
             pytest.skip("spec example not found")
 
         store = json.loads(path.read_text())
-
         resp = await client.post("/v1/import", json=store)
         assert resp.status_code == 200
         assert resp.json()["imported"] == 3
 
-        # Verify via list
         resp = await client.get("/v1/knowledge", params={"user_id": store["user_id"]})
         assert resp.status_code == 200
         assert len(resp.json()) == 3

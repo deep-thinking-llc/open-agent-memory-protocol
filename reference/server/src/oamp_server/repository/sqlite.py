@@ -7,7 +7,6 @@ bulk export/import support, and proper SQL schema.
 from __future__ import annotations
 
 import json
-import uuid
 from datetime import datetime, timezone
 from typing import Any, List, Optional
 

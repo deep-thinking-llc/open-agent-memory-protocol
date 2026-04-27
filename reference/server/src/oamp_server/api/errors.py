@@ -40,3 +40,7 @@ def version_conflict(stored_version: int, attempted_version: int) -> OampError:
 
 def forbidden_patch(field: str) -> OampError:
     return OampError(400, f"Cannot patch field: {field}", "FORBIDDEN_PATCH")
+
+
+def duplicate_id(resource_type: str, resource_id: str) -> OampError:
+    return OampError(409, f"{resource_type} already exists: {resource_id}", "DUPLICATE_ID")
