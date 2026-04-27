@@ -2,19 +2,19 @@ services:
   oamp-server:
     build:
       context: .
-      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     volumes:
-      - oamp-data:/app/keys
-      - oamp-db:/app
+      - oamp-keys:/app/keys
+      - oamp-data:/data
     environment:
-      - OAMP_DB_PATH=/app/oamp.db
+      - OAMP_DB_PATH=/data/oamp.db
       - OAMP_ENCRYPTION_KEY_DIR=/app/keys
       - OAMP_HOST=0.0.0.0
       - OAMP_PORT=8000
       - OAMP_AUDIT_LOG=true
+    restart: unless-stopped
 
 volumes:
+  oamp-keys:
   oamp-data:
-  oamp-db:

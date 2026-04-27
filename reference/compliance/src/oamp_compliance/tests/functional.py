@@ -161,6 +161,21 @@ def test_create_user_model(client: OAMPClient) -> TestResult:
     return TestResult("FUNC-10", "Create user model", TestResult.PASS)
 
 
+
+@registry.register("func", "FUNC-10B", "POST /v1/user-model -- model_version=0, expect 400")
+def test_create_user_model_version_zero(client: OAMPClient) -> TestResult:
+    """Verify that model_version=0 is rejected (spec Section 5.1: MUST be >= 1)."""
+    user_id = f"compliance-um-v0-{new_id()[:8]}"
+    model = make_user_model(user_id=user_id, model_version=0)
+    resp = client.create_user_model(model)
+    if resp.status_code != 400:
+        return TestResult(
+            "FUNC-10B", "User model version zero", TestResult.FAIL,
+            f"Expected 400 for model_version=0, got {resp.status_code}",
+        )
+    return TestResult("FUNC-10B", "User model version zero", TestResult.PASS)
+
+
 @registry.register("func", "FUNC-11", "POST /v1/user-model — update with higher version, expect 200")
 def test_update_user_model(client: OAMPClient) -> TestResult:
     user_id = f"compliance-um-upd-{new_id()[:8]}"

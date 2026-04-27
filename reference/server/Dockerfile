@@ -26,6 +26,10 @@ RUN pip install --no-cache-dir /tmp/*.whl && rm /tmp/*.whl
 # Expose the server port
 EXPOSE 8000
 
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD python3 -c "import urllib.request; print(urllib.request.urlopen('http://localhost:8000/health').status)" 2>/dev/null || exit 1
+
 # Create directory for encryption keys (recommended volume mount)
 VOLUME /app/keys
 

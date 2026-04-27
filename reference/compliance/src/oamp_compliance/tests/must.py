@@ -250,7 +250,7 @@ def test_confidence_range(client: OAMPClient) -> TestResult:
 def test_error_format(client: OAMPClient) -> TestResult:
     """Verify that error responses follow the spec-defined format."""
     # Trigger 404
-    resp = client.get_knowledge("00000000-0000-0000-0000-000000000000")
+    resp = client.get_knowledge(new_id())
     if resp.status_code != 404:
         return TestResult(
             "MUST-09", "Error format", TestResult.FAIL,
@@ -349,11 +349,14 @@ def test_no_silent_discard(client: OAMPClient) -> TestResult:
         )
 
     result = resp.json()
-    # The import response should report that the entry was handled (imported + rejected)
-    if "imported" not in result or "rejected" not in result:
+    # The entry with the same ID but lower confidence should NOT be silently dropped.
+    # The spec requires that rejected entries be reported.
+    total_reported = result.get("imported", 0) + result.get("rejected", 0)
+    if total_reported < 1:
         return TestResult(
             "MUST-11", "No silent discard", TestResult.FAIL,
-            f"Import response missing imported/rejected fields: {result}",
+            f"Import with duplicate ID: expected at least 1 entry reported, "
+            f"got imported={result.get('imported')} rejected={result.get('rejected')}",
         )
 
     return TestResult("MUST-11", "No silent discard", TestResult.PASS)

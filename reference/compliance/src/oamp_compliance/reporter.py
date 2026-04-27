@@ -51,7 +51,6 @@ def _generate_text(results: list[TestResult], server_url: str) -> str:
         "",
     ]
 
-    # Group by category
     categories: dict[str, list[TestResult]] = {}
     for r in results:
         categories.setdefault(r.test_id.split("-")[0], []).append(r)
@@ -63,7 +62,7 @@ def _generate_text(results: list[TestResult], server_url: str) -> str:
         lines.append(f"\n{cat_label}:")
         for r in cat_results:
             icon = {"PASS": "  ✅", "FAIL": "  ❌", "SKIP": "  ⚠️"}.get(r.status, "  ?")
-            msg = f" — {r.message}" if r.message else ""
+            msg = f" -- {r.message}" if r.message else ""
             lines.append(f"{icon} {r.test_id}: {r.description}{msg}")
 
     lines.extend([
@@ -140,34 +139,41 @@ def _generate_markdown(results: list[TestResult], server_url: str) -> str:
     return "\n".join(lines)
 
 
+def _esc(text: str) -> str:
+    """Escape XML special characters."""
+    return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+
+
 def _generate_junit(results: list[TestResult], server_url: str) -> str:
     """Generate JUnit XML for GitHub Actions integration."""
     summary = _summarize(results)
     test_cases = []
     failures = []
     for r in results:
-        case = f'    <testcase classname="oamp_compliance.{r.test_id}" name="{r.test_id}: {r.description}"'
+        name = _esc(r.test_id) + ": " + _esc(r.description)
+        case = '    <testcase classname="oamp_compliance.' + _esc(r.test_id) + '" '
+        case += 'name="' + name + '"'
         if r.status == TestResult.FAIL:
             case += ">\n"
-            case += f'      <failure message="{r.message}"/>\n'
+            case += '      <failure message="' + _esc(r.message) + '"/>\n'
             case += "    </testcase>"
             failures.append(r)
         elif r.status == TestResult.SKIP:
             case += ">\n"
-            case += f'      <skipped message="{r.message}"/>\n'
+            case += '      <skipped message="' + _esc(r.message) + '"/>\n'
             case += "    </testcase>"
         else:
             case += " />"
         test_cases.append(case)
 
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-    xml += f'<testsuite name="oamp-compliance" tests="{summary["total"]}" '
-    xml += f'failures="{summary["failed"]}" skipped="{summary["skipped"]}">\n'
+    xml += '<testsuite name="oamp-compliance" tests="' + str(summary["total"]) + '" '
+    xml += 'failures="' + str(summary["failed"]) + '" skipped="' + str(summary["skipped"]) + '">\n'
     xml += "\n".join(test_cases) + "\n"
     if failures:
         xml += "  <system-out>\n"
         for f in failures:
-            xml += f"    {f.test_id}: {f.message}\n"
+            xml += "    " + _esc(f.test_id) + ": " + _esc(f.message) + "\n"
         xml += "  </system-out>\n"
-    xml += '</testsuite>'
+    xml += "</testsuite>"
     return xml

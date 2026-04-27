@@ -33,12 +33,6 @@ class OAMPClient:
             timeout=timeout,
         )
 
-    def close(self) -> None:
-        self._client.close()
-
-    def _url(self, path: str) -> str:
-        return f"{self.base_url}{path}"
-
     # ── Knowledge Endpoints ─────────────────────────────
 
     def create_knowledge(self, entry: dict[str, Any]) -> httpx.Response:
