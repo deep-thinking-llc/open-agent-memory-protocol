@@ -152,12 +152,40 @@ jobs:
         working-directory: reference/elixir
         run: mix test
 
+  # ── Reference Server ─────────────────────────────────
+
+  test-server:
+    name: Reference Server
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: server-${{ runner.os }}-${{ hashFiles('reference/server/pyproject.toml') }}
+          restore-keys: server-${{ runner.os }}-
+
+      - name: Install dependencies
+        working-directory: reference/server
+        run: |-
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -e ".[dev]"
+
+      - name: Run tests
+        working-directory: reference/server
+        run: PYTHONPATH=src python3 -m pytest tests/ -v
+
   # ── Spec validation & cross-language checks ─────────────
 
   cross-language-check:
     name: Cross-language consistency
     runs-on: [self-hosted, macOS]
-    needs: [test-rust, test-typescript, test-python, test-go, test-elixir]
+    needs: [test-rust, test-typescript, test-python, test-go, test-elixir, test-server]
     timeout-minutes: 10
 
     steps:

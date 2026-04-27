@@ -191,6 +191,9 @@ reference/
   rust/                    Rust crate: oamp-types
   typescript/              Pakej npm: @oamp/types
   python/                  Pakej PyPI: oamp-types
+  go/                      Modul Go: oamp-go
+  elixir/                  Pakej Hex: oamp_types
+  server/                  Backend rujukan FastAPI
 
 validators/
   validate.sh              Pengesah dokumen CLI
