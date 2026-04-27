@@ -224,6 +224,16 @@ errors = OampTypes.Validate.validate_knowledge_entry(entry)
 json = Entry.to_json(entry)
 ```
 
+### Reference Server
+
+```bash
+cd reference/server
+pip install -e ".[dev]"
+python -m oamp_server
+```
+
+OpenAPI docs at `http://localhost:8000/docs` — 12 endpoints for knowledge CRUD, user models, search, and bulk export/import.
+
 ---
 
 ```
@@ -240,6 +250,7 @@ reference/
   python/                  PyPI package: oamp-types
   go/                      Go module: oamp-go
   elixir/                  Hex package: oamp_types
+  server/                  FastAPI reference backend
 
 scripts/
   protoc-gen.sh            Generate code from protobuf definitions
