@@ -1,6 +1,0 @@
-[tools]
-bun = "latest"
-elixir = "latest"
-erlang = "latest"
-python = "latest"
-rust = "latest"
