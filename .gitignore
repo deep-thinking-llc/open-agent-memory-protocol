@@ -26,6 +26,7 @@ reference/go/go.sum
 # === Elixir ===
 reference/elixir/_build/
 reference/elixir/deps/
+reference/elixir/doc/
 
 # === IDE / OS ===
 .idea/
