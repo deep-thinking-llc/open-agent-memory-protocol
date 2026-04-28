@@ -1,0 +1,20 @@
+name: Trigger Site Sync
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'spec/v1/oamp-v1.md'
+      - 'spec/v1/openapi.yaml'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger dthink.ai sync
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.DTHINK_SITE_PAT }}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/jaikoo/dthink.ai/dispatches \
+            -d '{"event_type":"oamp-spec-updated"}'
