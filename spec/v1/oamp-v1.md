@@ -355,16 +355,23 @@ On validation failure: `400 Bad Request` with a JSON error body.
 
 Success response: `200 OK` with the KnowledgeEntry document.
 If not found: `404 Not Found`.
+Backends MUST verify that the authenticated user owns this entry. If the
+requesting user does not own the entry, the backend MUST return `403 Forbidden`.
+An optional `?user_id=` query parameter is RECOMMENDED for defense-in-depth
+authorization verification.
 
 **DELETE /v1/knowledge/:id**
 
 Success response: `204 No Content`.
 Backends MUST permanently delete the entry (not soft-delete).
+Encrypted columns SHOULD be zeroized before deletion (spec §8.2.7).
+Backends MUST verify that the authenticated user owns this entry.
 
 **PATCH /v1/knowledge/:id**
 
 Allows partial update of `confidence`, `decay.last_confirmed`, and `tags`.
 Implementations MUST NOT allow patching `id`, `user_id`, `category`, or `source`.
+Backends MUST verify that the authenticated user owns this entry.
 
 **GET /v1/knowledge?query=**
 
@@ -432,9 +439,14 @@ The `GET /v1/knowledge?query=` endpoint accepts a text query parameter.
 
 ### 6.7 Authentication
 
-The spec does NOT define an authentication mechanism. Authentication is
+The spec does NOT define a specific authentication mechanism. Authentication is
 deployment-specific. The security guide RECOMMENDS mTLS or Bearer tokens.
 Backends MUST document their authentication requirements.
+
+Regardless of the authentication mechanism, backends MUST enforce user-level
+authorization: every API endpoint that returns or modifies knowledge data
+MUST be scoped to the authenticated user. Cross-user access MUST be rejected
+with `403 Forbidden`.
 
 ### 6.8 Error Responses
 
@@ -446,6 +458,18 @@ All error responses MUST be JSON objects with at least:
   "code": "machine-readable error code"
 }
 ```
+
+Recommended error codes:
+
+| Code | HTTP Status | When |
+|------|-----------|------|
+| `NOT_FOUND` | 404 | Resource does not exist |
+| `VERSION_CONFLICT` | 409 | model_version not monotonically increasing |
+| `VALIDATION_ERROR` | 400 | Field validation failure |
+| `DUPLICATE_ID` | 409 | Entry with same ID already exists |
+| `UNAUTHORIZED` | 401 | Authentication required |
+| `FORBIDDEN` | 403 | User does not own this resource |
+| `RATE_LIMITED` | 429 | Too many requests |
 
 ---
 
@@ -585,12 +609,13 @@ repository's discussion board.
 
 ### Backend Compliance
 
-- [ ] All nine REST endpoints implemented
+- [ ] All ten REST endpoints implemented
 - [ ] Data encrypted at rest
 - [ ] `/v1/export` returns all user data
 - [ ] DELETE endpoints perform permanent deletion
 - [ ] `model_version` monotonicity enforced
 - [ ] No knowledge content in logs
+- [ ] User-level authorization enforced on all endpoints
 - [ ] Error responses follow Section 6.8 format
 
 ---

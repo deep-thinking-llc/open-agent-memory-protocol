@@ -175,9 +175,64 @@ errors = validate_knowledge_entry(entry)
 json_str = entry.model_dump_json(exclude_none=True)
 ```
 
----
+### Go
 
-## Struktur Repositori
+```bash
+go get github.com/deep-thinking-llc/oamp-go
+```
+
+```go
+import oamp "github.com/deep-thinking-llc/oamp-go"
+
+entry := oamp.NewKnowledgeEntry(
+    "user-123",
+    oamp.KnowledgeCategoryCorrection,
+    "Never use unwrap() — use ? operator instead",
+    0.98,
+    "session-42",
+)
+
+// Pengesahan
+errors := oamp.ValidateKnowledgeEntry(entry)
+```
+
+### Elixir
+
+```elixir
+def deps do
+  [{:oamp_types, "~> 1.0.0"}]
+end
+```
+
+```elixir
+alias OampTypes.Knowledge.Entry
+
+entry = Entry.new(
+  "user-123",
+  :correction,
+  "Never use unwrap() — use ? operator instead",
+  0.98,
+  "session-42"
+)
+
+# Pengesahan
+errors = OampTypes.Validate.validate_knowledge_entry(entry)
+
+# Pengekodan JSON
+json = Entry.to_json(entry)
+```
+
+### Pelayan Rujukan
+
+```bash
+cd reference/server
+pip install -e ".[dev]"
+python -m oamp_server
+```
+
+Dokumentasi OpenAPI di `http://localhost:8000/docs` — 12 titik akhir untuk CRUD pengetahuan, model pengguna, carian, dan eksport/import pukal.
+
+---
 
 ```
 spec/v1/
@@ -194,6 +249,9 @@ reference/
   go/                      Modul Go: oamp-go
   elixir/                  Pakej Hex: oamp_types
   server/                  Backend rujukan FastAPI
+
+scripts/
+  protoc-gen.sh            Jana kod daripada definisi protobuf
 
 validators/
   validate.sh              Pengesah dokumen CLI
@@ -267,7 +325,7 @@ Kami mengalu-alukan sumbangan:
 
 1. Baca [spesifikasi](../spec/v1/oamp-v1.md) sebelum mencadangkan perubahan
 2. Tambah fixture ujian untuk perubahan skema
-3. Kemas kini semua tiga pelaksanaan rujukan: Rust, TypeScript, dan Python
+3. Kemas kini semua pelaksanaan rujukan (Rust, TypeScript, Python, Go, Elixir)
 4. Ikut gaya kod sedia ada
 
 ---

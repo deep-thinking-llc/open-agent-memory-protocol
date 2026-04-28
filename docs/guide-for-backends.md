@@ -21,6 +21,14 @@ Your backend MUST implement these endpoints:
 | POST | /v1/export | Export all user data |
 | POST | /v1/import | Import OAMP document |
 
+Your backend SHOULD also implement:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | /v1/admin/keys/rotate | Rotate encryption key |
+| GET | /v1/admin/audit | Query audit log |
+| GET | /health | Health check |
+
 ## Storage Requirements
 
 ### Encryption at Rest (MUST)
@@ -48,3 +56,7 @@ Support at minimum `application/json`. Optionally support `application/protobuf`
 - [ ] No knowledge content in server logs
 - [ ] Every stored entry has provenance (source with session_id + timestamp)
 - [ ] Search returns results ranked by relevance
+- [ ] All knowledge endpoints scoped to user_id (no cross-user leakage)
+- [ ] Rate limiting on all endpoints
+- [ ] TLS 1.2 minimum for production
+- [ ] Audit logging enabled (SHOULD)

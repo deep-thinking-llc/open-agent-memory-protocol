@@ -175,9 +175,64 @@ errors = validate_knowledge_entry(entry)
 json_str = entry.model_dump_json(exclude_none=True)
 ```
 
----
+### Go
 
-## リポジトリ構造
+```bash
+go get github.com/deep-thinking-llc/oamp-go
+```
+
+```go
+import oamp "github.com/deep-thinking-llc/oamp-go"
+
+entry := oamp.NewKnowledgeEntry(
+    "user-123",
+    oamp.KnowledgeCategoryCorrection,
+    "Never use unwrap() — use ? operator instead",
+    0.98,
+    "session-42",
+)
+
+// 検証
+errors := oamp.ValidateKnowledgeEntry(entry)
+```
+
+### Elixir
+
+```elixir
+def deps do
+  [{:oamp_types, "~> 1.0.0"}]
+end
+```
+
+```elixir
+alias OampTypes.Knowledge.Entry
+
+entry = Entry.new(
+  "user-123",
+  :correction,
+  "Never use unwrap() — use ? operator instead",
+  0.98,
+  "session-42"
+)
+
+# 検証
+errors = OampTypes.Validate.validate_knowledge_entry(entry)
+
+# JSON エンコード
+json = Entry.to_json(entry)
+```
+
+### リファレンスサーバー
+
+```bash
+cd reference/server
+pip install -e ".[dev]"
+python -m oamp_server
+```
+
+OpenAPIドキュメント：`http://localhost:8000/docs` — ナレッジCRUD、ユーザーモデル、検索、一括エクスポート/インポートの12エンドポイント。
+
+---
 
 ```
 spec/v1/
@@ -194,6 +249,9 @@ reference/
   go/                      Goモジュール: oamp-go
   elixir/                  Hexパッケージ: oamp_types
   server/                  FastAPIリファレンスバックエンド
+
+scripts/
+  protoc-gen.sh            protobuf定義からコード生成
 
 validators/
   validate.sh              CLIドキュメントバリデータ
@@ -267,7 +325,7 @@ OAMP準拠のメモリストアを構築：
 
 1. 変更を提案する前に[仕様](../spec/v1/oamp-v1.md)を読んでください
 2. スキーマ変更にテストフィクスチャを追加してください
-3. Rust、TypeScript、Pythonのすべてのリファレンス実装を更新してください
+3. すべてのリファレンス実装（Rust、TypeScript、Python、Go、Elixir）を更新してください
 4. 既存のコードスタイルに従ってください
 
 ---

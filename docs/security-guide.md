@@ -22,6 +22,7 @@ production deployment guidance.
 11. [CCPA Compliance Mapping](#11-ccpa-compliance-mapping)
 12. [AI-Specific Threat Vectors](#12-ai-specific-threat-vectors)
 13. [Secure Key Destruction](#13-secure-key-destruction)
+14. [Rate Limiting](#14-rate-limiting)
 
 ---
 
@@ -37,6 +38,8 @@ production deployment guidance.
 | **Insider** | Backend operator with DB access reads user knowledge | Database + filesystem |
 | **Data exfiltrator** | Attacker gains read access to the database | Database |
 | **Key compromise** | Attacker obtains encryption keys | Key store |
+| **Side-channel attacker** | Extract secrets via timing, cache, or memory access patterns | Co-located or local |
+| **Denial-of-service attacker** | Exhaust API resources to prevent legitimate access | Network-level |
 
 ### Attack Surface
 
@@ -57,6 +60,10 @@ Agent ──HTTPS──▶ Backend API ──▶ Database (encrypted at rest)
    Soft-delete is insufficient for GDPR Article 17 compliance.
 4. **User ID scoping prevents cross-user leakage.**
    Every query must be scoped to a user — no global list endpoints.
+5. **Constant-time crypto operations mitigate side-channel attacks.**
+   Timing variations in encryption/decryption can leak key material.
+6. **Rate limiting prevents abuse and denial-of-service.**
+   Unthrottled endpoints allow brute-force and resource exhaustion.
 
 ---
 
@@ -196,8 +203,37 @@ class KMSKeyProvider:
         response = self._client.generate_data_key(
             KeyId=self._key_id, KeySpec="AES_256"
         )
+        data_key = response["Plaintext"]       # 32-byte ephemeral AES key
+        encrypted_data_key = response["CiphertextBlob"]  # KMS-wrapped key
+
+        aesgcm = AESGCM(data_key)
+        nonce = os.urandom(12)
+        ct = aesgcm.encrypt(nonce, plaintext.encode("utf-8"), aad.encode("utf-8"))
+
+        # Zeroize the plaintext data key immediately after use
+        secure_zeroize(bytearray(data_key))
+
+        # Store: base64(encrypted_data_key || nonce || ciphertext || auth_tag)
+        return base64.b64encode(encrypted_data_key + nonce + ct).decode("ascii")
+
+    def decrypt(self, encrypted: str, aad: str) -> str:
+        data = base64.b64decode(encrypted)
+        # Split: first segment = encrypted data key, rest = nonce + ct + tag
+        # Actual split point depends on your KMS key's CiphertextBlob length
+        encrypted_data_key_len = 256  # adjust per your KMS key type
+        encrypted_data_key = data[:encrypted_data_key_len]
+        payload = data[encrypted_data_key_len:]
+
+        # Unwrap data key via KMS
+        response = self._client.decrypt(CiphertextBlob=encrypted_data_key)
         data_key = response["Plaintext"]
-        # ... encrypt with data key ...
+
+        aesgcm = AESGCM(data_key)
+        nonce = payload[:12]
+        pt = aesgcm.decrypt(nonce, payload[12:], aad.encode("utf-8"))
+
+        secure_zeroize(bytearray(data_key))
+        return pt.decode("utf-8")
 ```
 
 **HashiCorp Vault:**
@@ -220,12 +256,20 @@ vault write transit/encrypt/oamp plaintext=$(base64 <<< "knowledge content")
 
 ```
 DELETE /v1/user-model/:user_id
-├── Step 1: Zeroize encrypted columns (overwrite with 'ZEROED')
+├── Step 1: Zeroize encrypted columns (overwrite with random data)
 ├── Step 2: Delete knowledge_entries WHERE user_id = :user_id
 ├── Step 3: Delete knowledge_fts entries for this user
 ├── Step 4: Delete user_model WHERE user_id = :user_id
 ├── Step 5: Commit transaction (atomic)
 └── Return 204 No Content
+
+> **Why zeroize before delete?** Even though the rows are deleted in the same
+> transaction, most databases do not immediately reclaim physical storage. Deleted
+> rows may persist in data pages on disk until the page is rewritten or vacuumed.
+> Zeroizing encrypted columns ensures that residual data on disk cannot be
+> recovered even if the delete transaction is rolled back, if a raw disk image is
+> examined, or if the storage layer retains stale pages. This is a defense-in-depth
+> measure per spec §8.2.7 (secure deletion).
 ```
 
 ### Export Completeness Verification
@@ -271,8 +315,17 @@ POST /v1/export { user_id: "user-123" }
 - Timestamps
 - User IDs
 - HTTP method, path, status code
-- Agent IDs
-- Error codes (`NOT_FOUND`, `VERSION_CONFLICT`, etc.)
+- Agent IDs (from the API caller / auth context, not from knowledge entry sources)
+- Error codes (`NOT_FOUND`, `VERSION_CONFLICT`, `RATE_LIMITED`, etc.)
+
+> **Note on provenance fields:** The normative spec (§8.1.3) prohibits logging
+> "knowledge content, user model field values, or correction text." It does not
+> explicitly prohibit logging provenance fields (`source.session_id`,
+> `source.agent_id`). However, provenance data from knowledge entries can reveal
+> user activity patterns. This guide **recommends** not logging `source` fields
+> from knowledge entries in application logs. The audit log's `actor` field is
+> the authenticated API caller, not the knowledge entry's `source.agent_id` —
+> these are distinct concepts and logging the API caller is permitted.
 
 ### What MUST NOT Be Logged
 
@@ -322,7 +375,7 @@ Every KnowledgeEntry MUST have provenance data:
 |-------|----------|-----------|
 | `source.session_id` | ✅ MUST | Non-empty string |
 | `source.timestamp` | ✅ MUST | Valid ISO 8601 datetime |
-| `source.agent_id` | ❌ SHOULD | Non-empty string if present |
+| `source.agent_id` | ⚡ SHOULD | Non-empty string if present |
 
 ### Enforcement
 
@@ -350,7 +403,7 @@ from datetime import datetime, timezone
 
 def apply_decay(
     confidence_0: float,
-    half_life_days: float,
+    half_life_days: float | None,
     last_confirmed: datetime,
     now: datetime | None = None,
 ) -> float:
@@ -390,11 +443,13 @@ It enables:
 async def log_audit(
     db, action: str, user_id: str,
     entry_id: str | None = None, actor: str | None = None,
+    detail: str | None = None,
 ) -> None:
+    """Log an audit event. detail MUST NEVER contain knowledge content."""
     await db.execute(
-        """INSERT INTO audit_log (timestamp, action, user_id, entry_id, actor)
-           VALUES (?, ?, ?, ?, ?)""",
-        (datetime.now(timezone.utc).isoformat(), action, user_id, entry_id, actor),
+        """INSERT INTO audit_log (timestamp, action, user_id, entry_id, actor, detail)
+           VALUES (?, ?, ?, ?, ?, ?)""",
+        (datetime.now(timezone.utc).isoformat(), action, user_id, entry_id, actor, detail),
     )
     await db.commit()
 ```
@@ -449,10 +504,15 @@ server {
     listen 443 ssl http2;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers on;
+    ssl_prefer_server_ciphers on;  # Only affects TLS 1.2; TLS 1.3 ignores this
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
 }
 ```
+
+> **Note:** `ssl_prefer_server_ciphers` only applies to TLS 1.2 cipher negotiation.
+> TLS 1.3 cipher suites are negotiated by the client and server as part of the
+> handshake and cannot be overridden by this directive. For TLS 1.3, cipher suite
+> restriction is done at the OpenSSL/library configuration level, not in Nginx.
 
 ### Example: Caddy
 
@@ -471,7 +531,7 @@ oamp.example.com {
 |-------------|------------|-----------------|
 | Art. 5(1)(c) — Data minimization | Only collect necessary data | ✅ Spec defines minimal required fields |
 | Art. 6 — Lawfulness of processing | Legal basis required | ✅ Agent-user interaction provides legitimate interest |
-| Art. 7 — Consent withdrawal | Right to withdraw consent | ✅ `DELETE /v1/user-model/:user_id` |
+| Art. 7 — Consent withdrawal | Right to withdraw consent | ✅ Stop processing via API auth revocation; `DELETE /v1/user-model/:user_id` for erasure |
 | Art. 15 — Right of access | User can access their data | ✅ `POST /v1/export` returns all data |
 | Art. 16 — Right to rectification | User can correct inaccurate data | ✅ PATCH confidence, create corrections |
 | Art. 17 — Right to erasure | Right to be forgotten | ✅ Real deletion (not soft-delete) |
@@ -576,11 +636,24 @@ GET /v1/knowledge/search?q=Rust    # No user_id — cross-user search
 ```python
 import ctypes
 
-def secure_zeroize(data: bytes) -> None:
-    """Overwrite a bytes object in memory before freeing."""
-    buf = ctypes.create_string_buffer(data)
+def secure_zeroize(data: bytearray) -> None:
+    """Overwrite a mutable bytearray in memory before freeing.
+
+    NOTE: Python `bytes` objects are immutable — their memory cannot be zeroized.
+    You MUST use `bytearray` for sensitive data that needs secure destruction.
+    For data received as `bytes`, convert to `bytearray` before zeroizing.
+    """
+    buf = (ctypes.c_char * len(data)).from_buffer(data)
     ctypes.memset(ctypes.addressof(buf), 0, len(data))
     del buf
+```
+
+> **Python caveat:** Python's garbage collector may copy objects during memory
+> compaction, leaving residual copies of key material on the heap. For true
+> memory safety in Python, use the [cryptography library's `hazmat` primitives](
+> https://cryptography.io/en/latest/hazmat/primitives/) which handle key
+> zeroization internally in C. The Rust and Go reference implementations
+> do not have this limitation.
 ```
 
 ```rust
@@ -609,10 +682,51 @@ After a key is rotated out and all data has been re-encrypted:
 
 ---
 
+## 14. Rate Limiting
+
+All OAMP API endpoints SHOULD be rate-limited to protect against abuse:
+
+| Endpoint Category | Recommended Limit | Window |
+|-------------------|-------------------|--------|
+| Knowledge CRUD | 100 requests | per minute per user |
+| Search | 30 requests | per minute per user |
+| Export | 5 requests | per minute per user |
+| Import | 10 requests | per minute per user |
+| Admin (key rotation, audit) | 10 requests | per minute per API key |
+| Health check | 60 requests | per minute per IP |
+
+### Implementation
+
+Rate limiting SHOULD be implemented at the reverse proxy or API gateway level
+using a sliding window algorithm. Recommended tools:
+
+- **Nginx:** `limit_req_zone` with `$binary_remote_addr`
+- **Caddy:** `rate_limit` directive
+- **Cloudflare / AWS ALB:** Managed rate limiting
+- **Application-level:** Token bucket in middleware
+
+Rate-limited responses MUST return `429 Too Many Requests` with a `Retry-After`
+header indicating when the client may retry:
+
+```
+HTTP/1.1 429 Too Many Requests
+Retry-After: 30
+Content-Type: application/json
+
+{
+  "error": "Rate limit exceeded. Retry after 30 seconds.",
+  "code": "RATE_LIMITED"
+}
+```
+
+---
+
 ## References
 
 - OAMP Spec §8: Privacy and Security Requirements
 - [NIST SP 800-38D](https://csrc.nist.gov/publications/detail/sp/800-38d/final): Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM)
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/): API Security Risks
+- [OWASP API Security Top 10](https://owasp.org/www-project-api-security/): API Security Risks
+- [OWASP Rate Limiting Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/REST_Security_Cheat_Sheet.html): REST Security
 - [GDPR Article 17](https://gdpr-info.eu/art-17-gdpr/): Right to Erasure
 - [CCPA §1798.105](https://oag.ca.gov/privacy/ccpa): Right to Delete
+- [NIST SP 800-57](https://csrc.nist.gov/publications/detail/sp/800-57-part-1/rev-5/final): Key Management Recommendations

@@ -29,6 +29,14 @@ tags:
     description: Export and import operations
   - name: Admin
     description: Key rotation and audit log query
+  - name: Health
+    description: Server health and readiness
+
+# ── Security ─────────────────────────────────────────────────────────
+
+security:
+  - bearerAuth: []
+  - mtls: []
 
 # ── Paths ────────────────────────────────────────────────────────────
 
@@ -61,8 +69,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "409":
           description: Duplicate entry ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -74,6 +105,8 @@ paths:
       description: |
         List entries for a user, with optional category filter.
         When `query` is provided, performs full-text search scoped to the user.
+        Results MUST be scoped to the specified user_id — no unauthenticated
+        or unscoped listing is permitted (spec §8.1.4, security guide §12).
       operationId: listOrSearchKnowledge
       parameters:
         - name: user_id
@@ -81,7 +114,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Scope results to this user
+          description: Scope results to this user (required for authorization)
         - name: query
           in: query
           required: false
@@ -114,18 +147,49 @@ paths:
           description: Number of entries to skip
       responses:
         "200":
-          description: List of knowledge entries
+          description: Paginated list of knowledge entries
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/KnowledgeEntry'
+                $ref: '#/components/schemas/KnowledgeEntryList'
+        "400":
+          description: Validation error (e.g., missing user_id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions for this user_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/knowledge/{entry_id}:
     get:
       tags: [Knowledge]
       summary: Retrieve a knowledge entry by ID
+      description: |
+        Retrieves a knowledge entry by its UUID. The server MUST verify that
+        the authenticated user owns this entry. An explicit user_id query
+        parameter is recommended for defense-in-depth authorization checks.
       operationId: getKnowledge
       parameters:
         - name: entry_id
@@ -135,6 +199,15 @@ paths:
             type: string
             format: uuid
           description: UUID v4 of the knowledge entry
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            Optional user_id for server-side authorization verification.
+            If provided, the server SHOULD verify the entry belongs to this user
+            before returning it (defense-in-depth per security guide §12).
       responses:
         "200":
           description: Knowledge entry found
@@ -142,8 +215,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KnowledgeEntry'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: User does not own this entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -156,6 +252,7 @@ paths:
         Permanently deletes a knowledge entry. Returns 204 with empty body.
         Not a soft-delete — data is irrecoverable after this call.
         Encrypted columns are zeroized before deletion (spec §8.2.7).
+        The server MUST verify that the authenticated user owns this entry.
       operationId: deleteKnowledge
       parameters:
         - name: entry_id
@@ -164,11 +261,43 @@ paths:
           schema:
             type: string
             format: uuid
+          description: UUID v4 of the knowledge entry
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            Optional user_id for server-side authorization verification.
+            If provided, the server SHOULD verify the entry belongs to this user.
       responses:
         "204":
           description: Entry deleted (no content)
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: User does not own this entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -181,6 +310,7 @@ paths:
         Updates allowed fields on a knowledge entry.
         Fields `id`, `user_id`, `category`, `source`, `content`, `oamp_version`,
         and `type` are forbidden and will return 400.
+        The server MUST verify that the authenticated user owns this entry.
       operationId: updateKnowledge
       parameters:
         - name: entry_id
@@ -189,6 +319,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: user_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: |
+            Optional user_id for server-side authorization verification.
       requestBody:
         required: true
         content:
@@ -231,8 +368,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: User does not own this entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: Entry not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -272,8 +432,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "409":
           description: Version conflict (model_version <= stored)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -298,8 +481,31 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserModel'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: User model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -312,6 +518,7 @@ paths:
         Permanently deletes the user model and ALL associated knowledge
         entries for this user. Returns 204 with empty body.
         Not reversible — all data for this user is permanently removed.
+        Encrypted columns are zeroized before deletion (spec §8.2.7).
       operationId: deleteUserModel
       parameters:
         - name: user_id
@@ -322,8 +529,31 @@ paths:
       responses:
         "204":
           description: User and all data deleted (no content)
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         "404":
           description: User model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
           content:
             application/json:
               schema:
@@ -337,6 +567,7 @@ paths:
         Returns a KnowledgeStore containing all knowledge entries for the
         specified user. If a UserModel exists for this user, it is included
         in the `metadata.user_model` field.
+        All entries are returned — no pagination (but entries are encrypted at rest).
       operationId: exportData
       requestBody:
         required: true
@@ -356,6 +587,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/KnowledgeStore'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions for this user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "404":
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/import:
     post:
@@ -386,6 +646,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/admin/keys/rotate:
     post:
@@ -412,6 +695,29 @@ paths:
                 example:
                   key_id: "a1b2c3d4e5f6g7h8"
                   message: "Encryption key rotated successfully. New writes will use this key."
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /v1/admin/audit:
     get:
@@ -429,6 +735,13 @@ paths:
           schema:
             type: string
           description: Filter to a specific user
+        - name: action
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [create, read, update, delete, export, import, rotate_key]
+          description: Filter by action type
         - name: limit
           in: query
           required: false
@@ -446,19 +759,44 @@ paths:
             minimum: 0
       responses:
         "200":
-          description: Audit log entries
+          description: Paginated audit log entries
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/AuditEntry'
+                $ref: '#/components/schemas/AuditLogList'
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
   /health:
     get:
       tags: [Health]
       summary: Health check
+      description: |
+        Returns server health status. This endpoint does not require
+        authentication.
       operationId: healthCheck
+      security: []
       responses:
         "200":
           description: Server is healthy
@@ -470,10 +808,49 @@ paths:
                   status:
                     type: string
                     example: ok
+                  version:
+                    type: string
+                    example: "1.0.0"
+        "503":
+          description: Server is unhealthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: unhealthy
+        "429":
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds until retry is allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 # ── Components ──────────────────────────────────────────────────────
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT or opaque bearer token. The token MUST identify the user
+        and their permissions. Recommended for agent-to-backend communication.
+    mtls:
+      type: mutualTLS
+      description: |
+        Mutual TLS (mTLS). Both client and server present certificates.
+        Recommended for backend-to-backend communication and production
+        deployments. See security guide §9 for TLS requirements.
+
   schemas:
     KnowledgeEntry:
       $ref: "./knowledge-entry.schema.json"
@@ -483,6 +860,47 @@ components:
 
     UserModel:
       $ref: "./user-model.schema.json"
+
+    KnowledgeEntryList:
+      type: object
+      required: [entries, total, limit, offset]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeEntry'
+          description: Knowledge entries in this page
+        total:
+          type: integer
+          description: Total number of matching entries (across all pages)
+        limit:
+          type: integer
+          description: Maximum entries per page (matches request limit)
+        offset:
+          type: integer
+          description: Number of entries skipped (matches request offset)
+        has_more:
+          type: boolean
+          description: Whether additional pages exist beyond this one
+
+    AuditLogList:
+      type: object
+      required: [entries, total, limit, offset]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditEntry'
+          description: Audit log entries in this page
+        total:
+          type: integer
+          description: Total number of matching entries
+        limit:
+          type: integer
+          description: Maximum entries per page
+        offset:
+          type: integer
+          description: Number of entries skipped
 
     Error:
       type: object
@@ -501,6 +919,12 @@ components:
           code: "VERSION_CONFLICT"
         - error: "confidence must be 0.0-1.0, got 1.5"
           code: "VALIDATION_ERROR"
+        - error: "Rate limit exceeded. Retry after 30 seconds."
+          code: "RATE_LIMITED"
+        - error: "Authentication required"
+          code: "UNAUTHORIZED"
+        - error: "User does not own this resource"
+          code: "FORBIDDEN"
 
     ImportResult:
       type: object
@@ -518,6 +942,25 @@ components:
         user_id:
           type: string
           description: User whose data was imported
+        errors:
+          type: array
+          description: Details of rejected entries (not present when rejected=0)
+          items:
+            type: object
+            required: [entry_id, code, error]
+            properties:
+              entry_id:
+                type: string
+                format: uuid
+                description: ID of the rejected entry
+              code:
+                type: string
+                description: Machine-readable rejection code
+                example: "VALIDATION_ERROR"
+              error:
+                type: string
+                description: Human-readable rejection reason
+                example: "source.session_id is required"
 
     AuditEntry:
       type: object
@@ -543,8 +986,8 @@ components:
         actor:
           type: string
           nullable: true
-          description: Agent or system that initiated the action
+          description: Authenticated agent or system that initiated the action
         detail:
           type: string
           nullable: true
-          description: Additional context (never knowledge content)
+          description: Additional context (MUST NEVER contain knowledge content)

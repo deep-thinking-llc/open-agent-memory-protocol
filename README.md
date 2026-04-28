@@ -290,7 +290,7 @@ Add memory portability to your agent:
 
 Build an OAMP-compliant memory store:
 
-- 9 REST endpoints (knowledge CRUD, user model, export/import)
+- 10 REST endpoints (knowledge CRUD, user model, export/import)
 - Encryption at rest (mandatory)
 - Search (FTS, vector, or hybrid — your choice)
 

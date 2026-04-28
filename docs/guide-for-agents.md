@@ -96,5 +96,7 @@ Your agent MUST:
 - Include provenance (`source`) on every entry
 - Never log the `content` field
 - Support full export and deletion when the user requests it
+- Authenticate all API calls (Bearer token or mTLS recommended)
+- Never attempt to access another user's entries (user_id scoping)
 
 See [security-guide.md](security-guide.md) for details.

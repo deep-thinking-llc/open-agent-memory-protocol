@@ -175,9 +175,64 @@ errors = validate_knowledge_entry(entry)
 json_str = entry.model_dump_json(exclude_none=True)
 ```
 
----
+### Go
 
-## 저장소 구조
+```bash
+go get github.com/deep-thinking-llc/oamp-go
+```
+
+```go
+import oamp "github.com/deep-thinking-llc/oamp-go"
+
+entry := oamp.NewKnowledgeEntry(
+    "user-123",
+    oamp.KnowledgeCategoryCorrection,
+    "Never use unwrap() — use ? operator instead",
+    0.98,
+    "session-42",
+)
+
+// 검증
+errors := oamp.ValidateKnowledgeEntry(entry)
+```
+
+### Elixir
+
+```elixir
+def deps do
+  [{:oamp_types, "~> 1.0.0"}]
+end
+```
+
+```elixir
+alias OampTypes.Knowledge.Entry
+
+entry = Entry.new(
+  "user-123",
+  :correction,
+  "Never use unwrap() — use ? operator instead",
+  0.98,
+  "session-42"
+)
+
+# 검증
+errors = OampTypes.Validate.validate_knowledge_entry(entry)
+
+# JSON 인코딩
+json = Entry.to_json(entry)
+```
+
+### 참조 서버
+
+```bash
+cd reference/server
+pip install -e ".[dev]"
+python -m oamp_server
+```
+
+OpenAPI 문서: `http://localhost:8000/docs` — 지식 CRUD, 사용자 모델, 검색, 대량 내보내기/가져오기를 위한 12개 엔드포인트.
+
+---
 
 ```
 spec/v1/
@@ -194,6 +249,9 @@ reference/
   go/                      Go 모듈: oamp-go
   elixir/                  Hex 패키지: oamp_types
   server/                  FastAPI 참조 백엔드
+
+scripts/
+  protoc-gen.sh            protobuf 정의에서 코드 생성
 
 validators/
   validate.sh              CLI 문서 검증기
@@ -267,7 +325,7 @@ OAMP 호환 메모리 저장소를 구축하세요:
 
 1. 변경 사항을 제안하기 전에 [사양](../spec/v1/oamp-v1.md)을 읽으세요
 2. 스키마 변경에 대한 테스트 픽스처를 추가하세요
-3. Rust, TypeScript, Python 참조 구현을 모두 업데이트하세요
+3. 모든 참조 구현 (Rust, TypeScript, Python, Go, Elixir)을 업데이트하세요
 4. 기존 코드 스타일을 따르세요
 
 ---

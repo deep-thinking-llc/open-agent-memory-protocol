@@ -175,9 +175,64 @@ errors = validate_knowledge_entry(entry)
 json_str = entry.model_dump_json(exclude_none=True)
 ```
 
----
+### Go
 
-## 仓库结构
+```bash
+go get github.com/deep-thinking-llc/oamp-go
+```
+
+```go
+import oamp "github.com/deep-thinking-llc/oamp-go"
+
+entry := oamp.NewKnowledgeEntry(
+    "user-123",
+    oamp.KnowledgeCategoryCorrection,
+    "Never use unwrap() — use ? operator instead",
+    0.98,
+    "session-42",
+)
+
+// 验证
+errors := oamp.ValidateKnowledgeEntry(entry)
+```
+
+### Elixir
+
+```elixir
+def deps do
+  [{:oamp_types, "~> 1.0.0"}]
+end
+```
+
+```elixir
+alias OampTypes.Knowledge.Entry
+
+entry = Entry.new(
+  "user-123",
+  :correction,
+  "Never use unwrap() — use ? operator instead",
+  0.98,
+  "session-42"
+)
+
+# 验证
+errors = OampTypes.Validate.validate_knowledge_entry(entry)
+
+# JSON 编码
+json = Entry.to_json(entry)
+```
+
+### 参考服务器
+
+```bash
+cd reference/server
+pip install -e ".[dev]"
+python -m oamp_server
+```
+
+OpenAPI 文档位于 `http://localhost:8000/docs` — 12 个端点，用于知识 CRUD、用户模型、搜索和批量导出/导入。
+
+---
 
 ```
 spec/v1/
@@ -194,6 +249,9 @@ reference/
   go/                      Go 模块: oamp-go
   elixir/                  Hex 包: oamp_types
   server/                  FastAPI 参考后端
+
+scripts/
+  protoc-gen.sh            从 protobuf 定义生成代码
 
 validators/
   validate.sh              CLI 文档验证器
@@ -267,7 +325,7 @@ docs/
 
 1. 在提出更改之前阅读[规范](../spec/v1/oamp-v1.md)
 2. 为 Schema 更改添加测试夹具
-3. 同时更新 Rust、TypeScript 和 Python 参考实现
+3. 更新所有参考实现（Rust、TypeScript、Python、Go、Elixir）
 4. 遵循现有的代码风格
 
 ---
