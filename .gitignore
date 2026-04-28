@@ -50,4 +50,7 @@ design/
 *.a
 *.so
 *.dylib
-*.dllmise.toml
+*.dll
+
+# === Runtime version managers ===
+mise.toml
