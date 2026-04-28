@@ -1,0 +1,83 @@
+name: Auto-translate Spec
+
+on:
+  workflow_dispatch:
+
+jobs:
+  translate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Translate spec with OpenAI
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -e
+          pip install openai
+
+          python3 << 'PYEOF'
+          import os, json
+          from openai import OpenAI
+
+          client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+
+          langs = {
+            "ja": "Japanese",
+            "zh": "Chinese (Simplified)",
+            "ko": "Korean",
+            "ms": "Bahasa Melayu"
+          }
+
+          with open("spec/v1/oamp-v1.md", "r") as f:
+            source = f.read()
+
+          for code, name in langs.items():
+            print(f"Translating to {name}...")
+            response = client.chat.completions.create(
+              model="gpt-4o-mini",
+              messages=[
+                {
+                  "role": "system",
+                  "content": f"You are a technical translator. Translate the following markdown document into {name}. Preserve all markdown formatting, code blocks, JSON examples, and RFC 2119 keywords (MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY, OPTIONAL) in English. Only translate prose and headings."
+                },
+                {
+                  "role": "user",
+                  "content": source
+                }
+              ],
+              temperature=0.2,
+            )
+            translated = response.choices[0].message.content
+            out_path = f"spec/v1/oamp-v1.{code}.md"
+            with open(out_path, "w") as f:
+              f.write(translated)
+            print(f"Wrote {out_path}")
+          PYEOF
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'chore: auto-translate spec to ja, zh, ko, ms'
+          title: 'chore: auto-translate spec updates'
+          body: |
+            This PR contains auto-generated translations of the spec.
+            Please review before merging.
+          branch: auto-translate-spec
+          delete-branch: true

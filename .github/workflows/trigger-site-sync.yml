@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'spec/v1/oamp-v1.md'
+      - 'spec/v1/oamp-v1.ja.md'
+      - 'spec/v1/oamp-v1.zh.md'
+      - 'spec/v1/oamp-v1.ko.md'
+      - 'spec/v1/oamp-v1.ms.md'
       - 'spec/v1/openapi.yaml'
 
 jobs:
