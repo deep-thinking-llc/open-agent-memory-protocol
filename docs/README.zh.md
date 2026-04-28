@@ -340,6 +340,6 @@ docs/
 
 ---
 
-**MIT 许可证** — [Deep Thinking LLC](https://dthink.ai)
+**MIT 许可证** — [Deep Thinking](https://dthink.ai)
 
 </div>

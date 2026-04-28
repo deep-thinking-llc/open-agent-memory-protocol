@@ -343,6 +343,6 @@ For questions, partnerships, or feedback
 
 ---
 
-**MIT License** — [Deep Thinking LLC](https://dthink.ai)
+**MIT License** — [Deep Thinking](https://dthink.ai)
 
 </div>

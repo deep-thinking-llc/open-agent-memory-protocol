@@ -340,6 +340,6 @@ OAMP準拠のメモリストアを構築：
 
 ---
 
-**MITライセンス** — [Deep Thinking LLC](https://dthink.ai)
+**MITライセンス** — [Deep Thinking](https://dthink.ai)
 
 </div>

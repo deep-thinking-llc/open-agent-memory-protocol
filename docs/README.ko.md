@@ -340,6 +340,6 @@ OAMP 호환 메모리 저장소를 구축하세요:
 
 ---
 
-**MIT 라이선스** — [Deep Thinking LLC](https://dthink.ai)
+**MIT 라이선스** — [Deep Thinking](https://dthink.ai)
 
 </div>

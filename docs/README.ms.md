@@ -340,6 +340,6 @@ Untuk pertanyaan, perkongsian, atau maklum balas
 
 ---
 
-**Lesen MIT** — [Deep Thinking LLC](https://dthink.ai)
+**Lesen MIT** — [Deep Thinking](https://dthink.ai)
 
 </div>

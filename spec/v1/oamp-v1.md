@@ -2,7 +2,7 @@
 
 **Status:** Draft
 **Date:** 2026-04-06
-**Authors:** Deep Thinking LLC
+**Authors:** Deep Thinking
 **Repository:** `github.com/deep-thinking-llc/open-agent-memory-protocol`
 
 ---
