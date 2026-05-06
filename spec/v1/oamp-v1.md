@@ -413,7 +413,10 @@ the User Model in the `metadata` field (if present).
 **POST /v1/import**
 
 Request body: a KnowledgeStore document.
-Response: `200 OK` with a summary of imported, skipped, and rejected entries.
+Response: `201 Created` with a JSON body summarising imported, skipped,
+and rejected entries, plus an `id_mappings` object. See Appendix A.2 and
+A.3 for the full response schema. (Errata: the original v1.0 text specified
+`200 OK`; clients MUST accept both `200` and `201` for backward compatibility.)
 
 ### 6.5 Content Negotiation
 
@@ -597,7 +600,82 @@ repository's discussion board.
 
 ---
 
-## Appendix A: Compliance Checklist
+## Appendix A: Errata (v1.0.0)
+
+This section records clarifications to v1.0.0 that are not breaking changes but
+resolve ambiguities discovered during cross-implementation interop testing.
+These errata are normative for new v1.0 implementations and are incorporated
+into the v1.1 spec with full detail.
+
+### A.1 user_id Format (Errata for §3.2, §4.2, §5.1)
+
+The `user_id` field is an opaque string. Its encoding format is
+implementation-defined (e.g., composite `"tenant:user"`, hex-encoded public
+key, UUID, etc.). Implementations MUST NOT assume a specific format.
+
+**For cross-implementation interoperability**, implementations SHOULD advertise
+their `user_id` format via the `/v1/capabilities` endpoint (defined in v1.1 §2).
+Clients that bridge multiple OAMP backends MUST inspect capabilities before
+assuming `user_id` semantics.
+
+### A.2 Import Response Shape (Errata for §6.4)
+
+`POST /v1/import` MUST return `201 Created` with a JSON body:
+
+```json
+{
+  "imported": 5,
+  "skipped": 0,
+  "rejected": 0,
+  "id_mappings": {}
+}
+```
+
+| Field | Type | Requirement | Description |
+|-------|------|-------------|-------------|
+| `imported` | integer | MUST | Number of entries successfully imported. |
+| `skipped` | integer | MUST | Number of entries skipped (e.g., duplicate with equal or higher confidence). |
+| `rejected` | integer | MUST | Number of entries rejected due to validation errors. |
+| `id_mappings` | object | MUST | Map of `{"original_id": "assigned_id"}` for entries whose IDs were regenerated. Empty `{}` if all IDs were preserved. See A.3. |
+
+Previously, v1.0 §6.4 stated "`200 OK` with a summary". This errata corrects
+the status code to `201 Created` and pins the response body shape. Implementations
+that currently return `200 OK` SHOULD update to `201 Created` but clients MUST
+accept both `200` and `201` for backward compatibility.
+
+If any entries are rejected, the response SHOULD include a `rejections` array:
+
+```json
+{
+  "imported": 4,
+  "skipped": 0,
+  "rejected": 1,
+  "id_mappings": {},
+  "rejections": [
+    {"id": "...", "reason": "invalid category"}
+  ]
+}
+```
+
+### A.3 Entry ID Preservation on Import (Errata for §4.4, §6.4)
+
+Implementations MAY preserve or regenerate entry IDs during import. However:
+
+- Implementations that preserve client-supplied `id` values MUST return
+  `id_mappings` as an empty object `{}`.
+- Implementations that regenerate IDs MUST return an `id_mappings` object
+  mapping each original ID to its new assigned ID.
+- Clients that bridge multiple OAMP backends or use entry IDs as join keys
+  MUST inspect `id_mappings` and update their references accordingly.
+
+This accommodates both architectural patterns:
+- **ID-preserving backends** (e.g., cosmictron) store the original ID directly.
+- **Deterministic-derivation backends** (e.g., kizuna-mem) generate IDs from
+  internal keys and expose the mapping for client-side reconciliation.
+
+---
+
+## Appendix B: Compliance Checklist
 
 ### Agent Compliance
 
@@ -620,7 +698,7 @@ repository's discussion board.
 
 ---
 
-## Appendix B: JSON Schema Locations
+## Appendix C: JSON Schema Locations
 
 | Document Type | Schema |
 |--------------|--------|

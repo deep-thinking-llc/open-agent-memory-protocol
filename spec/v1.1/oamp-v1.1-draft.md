@@ -79,6 +79,11 @@ Returns a JSON object describing the backend's protocol surface.
                     "/v1/user-model/{user_id}"],
       "min_resolution_ms": 1
     },
+    "user_id_format": {
+      "description": "tenant:node composite (e.g. '1:user')",
+      "pattern": "^[0-9]+:.+$"
+    },
+    "id_preservation": "preserved",
     "content_types": ["application/json", "application/protobuf"],
     "auth_schemes": ["bearer"]
   }
@@ -94,11 +99,95 @@ Returns a JSON object describing the backend's protocol surface.
 - Backends MAY include vendor-specific keys under
   `capabilities.metadata` (object). Clients MUST tolerate unknown keys.
 
+**`user_id_format` (REQUIRED):**
+
+Backends MUST advertise their `user_id` encoding format so that clients
+bridging multiple OAMP backends can pre-flight check compatibility before
+attempting cross-backend import/export. The object contains:
+
+| Field | Type | Requirement | Description |
+|-------|------|-------------|-------------|
+| `description` | string | MUST | Human-readable description of the format (e.g., `"tenant:node composite (e.g. '1:user')"`, `"64-char lowercase hex Ed25519 public key"`). |
+| `pattern` | string | MAY | ECMA-262 regex that matches valid `user_id` values for this backend. Clients MAY use this for pre-validation. |
+
+The `user_id` field in OAMP documents remains an opaque string (no format
+constraint in the schema). The capabilities advertisement is for client-side
+compatibility checking only. Clients that bridge backends with incompatible
+`user_id` formats MUST transform `user_id` values during cross-backend
+transfer (this is a client responsibility, not a backend responsibility).
+
+**`id_preservation` (REQUIRED):**
+
+A string indicating whether the backend preserves client-supplied entry IDs
+during `POST /v1/import`. One of:
+
+- `"preserved"` -- The backend stores and returns the client-supplied `id`
+  unchanged. The `id_mappings` field in the import response will always be
+  empty `{}`.
+- `"regenerated"` -- The backend MAY assign new IDs to imported entries
+  (e.g., deterministic derivation from internal keys). The `id_mappings`
+  field in the import response MUST contain a mapping from each original ID
+  to its new assigned ID.
+
+Clients that bridge multiple OAMP backends and use entry IDs as join keys
+MUST inspect `id_preservation` and, if `"regenerated"`, apply `id_mappings`
+from the import response to maintain reference integrity.
+
 ### 2.2 v1.0 Backwards Compatibility
 
 A v1.0 backend will return `404 Not Found` for `/v1/capabilities`. Clients
 MUST treat this response as "backend is v1.0; no OPTIONAL capabilities
-available" and fall back to REST-only behaviour.
+available" and fall back to REST-only behaviour. v1.0 backends also do not
+advertise `user_id_format` or `id_preservation`; clients bridging multiple
+backends MUST handle this gracefully (see §5).
+
+### 2.3 Import Response Shape (Clarification of v1.0 §6.4)
+
+v1.0 §6.4 defined `POST /v1/import` as returning "`200 OK` with a summary"
+but did not pin the status code or response body shape. v1.1 mandates the
+following:
+
+**Status code:** `201 Created`. (Clients MUST also accept `200 OK` from
+v1.0 backends for backward compatibility.)
+
+**Response body:**
+
+```json
+{
+  "imported": 5,
+  "skipped": 0,
+  "rejected": 0,
+  "id_mappings": {
+    "88f88510-928b-49d9-aff1-4f32acbf1f97": "a299eeae-39ac-4248-ae24-007302cb64fc"
+  }
+}
+```
+
+| Field | Type | Requirement | Description |
+|-------|------|-------------|-------------|
+| `imported` | integer | MUST | Number of entries successfully imported. |
+| `skipped` | integer | MUST | Number of entries skipped (e.g., duplicate with equal or higher confidence). |
+| `rejected` | integer | MUST | Number of entries rejected due to validation errors. |
+| `id_mappings` | object | MUST | Map of original ID to assigned ID. Empty `{}` if all IDs were preserved. See §2.4. |
+| `rejections` | array | MAY | Detail on rejected entries. Each element: `{"id": "...", "reason": "..."}`. |
+
+### 2.4 Entry ID Preservation on Import (Clarification of v1.0 §4.4)
+
+Implementations MAY preserve or regenerate entry IDs during import, but
+MUST communicate the outcome via the import response:
+
+- **ID-preserving backends** (advertised as `id_preservation: "preserved"` in
+  capabilities): store the client-supplied `id` unchanged. The `id_mappings`
+  field in the import response MUST be `{}`.
+- **ID-regenerating backends** (advertised as `id_preservation: "regenerated"`
+  in capabilities): assign new IDs during import (e.g., via deterministic
+  derivation). The `id_mappings` field in the import response MUST map every
+  imported entry's original ID to its new assigned ID.
+
+This accommodates both architectural patterns without requiring either to
+change its internal design. Clients that depend on ID stability (e.g., agents
+building memory graphs keyed on entry IDs) MUST inspect `id_mappings` and
+update their references after import.
 
 ---
 
