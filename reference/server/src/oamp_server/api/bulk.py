@@ -9,6 +9,8 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from oamp_types import KnowledgeStore
 
+from ..auth import extract_grant
+from ..config import Settings
 from ..services.knowledge import KnowledgeService
 from ..services.user_model import UserModelService
 
@@ -29,12 +31,17 @@ def _get_user_model_service(request: Request) -> UserModelService:
     return request.app.state.user_model_service
 
 
+def _get_settings(request: Request) -> Settings:
+    return request.app.state.settings
+
+
 @router.post("/export")
 async def export_knowledge(
     body: ExportRequest,
     request: Request,
     knowledge_service: KnowledgeService = Depends(_get_knowledge_service),
     user_model_service: UserModelService = Depends(_get_user_model_service),
+    settings: Settings = Depends(_get_settings),
 ) -> dict[str, Any]:
     """Export all data for a user.
 
@@ -43,7 +50,8 @@ async def export_knowledge(
     """
     # Audit export (spec §8.2.6)
     await request.app.state.repo.log_audit_event("export", body.user_id)
-    return await knowledge_service.export_user(body.user_id, user_model_service)
+    grant = extract_grant(request, settings) if settings.governance_enforcement_enabled else None
+    return await knowledge_service.export_user(body.user_id, user_model_service, grant=grant)
 
 
 @router.post("/import")
@@ -51,6 +59,7 @@ async def import_knowledge(
     store: KnowledgeStore,
     request: Request,
     service: KnowledgeService = Depends(_get_knowledge_service),
+    settings: Settings = Depends(_get_settings),
 ) -> dict[str, Any]:
     """Import a KnowledgeStore, creating all entries.
 
@@ -58,15 +67,20 @@ async def import_knowledge(
     Returns 201 Created with a summary of imported, skipped, and rejected entries,
     plus an id_mappings object.
     """
-    imported_count = await service.import_store(store)
+    grant = extract_grant(request, settings) if settings.governance_enforcement_enabled else None
+    imported_count, rejected_count = await service.import_store(store, grant=grant)
     # Audit import (spec §8.2.6)
-    await request.app.state.repo.log_audit_event("import", store.user_id, detail=f"imported:{imported_count}")
+    await request.app.state.repo.log_audit_event(
+        "import",
+        store.user_id,
+        detail=f"imported:{imported_count};rejected:{rejected_count}",
+    )
     return JSONResponse(
         status_code=201,
         content={
             "imported": imported_count,
             "skipped": 0,
-            "rejected": 0,
+            "rejected": rejected_count,
             "id_mappings": {},
             "user_id": store.user_id,
         },

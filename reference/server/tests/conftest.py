@@ -5,6 +5,7 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
+import jwt
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -27,6 +28,7 @@ def settings(key_dir):
         db_path=":memory:",
         encryption_key_dir=key_dir,
         audit_log=False,  # Disable audit for most tests
+        governance_grant_secret="oamp-test-grant-secret-32bytes!!",
     )
 
 
@@ -87,11 +89,11 @@ def make_knowledge_entry():
 
 @pytest.fixture
 def make_governed_knowledge_entry(make_knowledge_entry):
-    """Factory fixture to create v1.2 knowledge entries with governance metadata."""
+    """Factory fixture to create governed knowledge entries with governance metadata."""
 
     def _make(**kwargs) -> dict:
         entry = make_knowledge_entry(**kwargs)
-        entry["oamp_version"] = "1.2.0"
+        entry["oamp_version"] = "1.3.0"
         entry["provenance"] = {
             "sources": [
                 {
@@ -111,6 +113,41 @@ def make_governed_knowledge_entry(make_knowledge_entry):
             },
         }
         return entry
+
+    return _make
+
+
+@pytest.fixture
+def make_grant_headers(settings):
+    """Create signed v1.3 grant headers for reference-server tests."""
+
+    def _make(
+        user_id: str = "user-test",
+        agent_id: str = "coding-assistant-v9",
+        grant_id: str = "grant-test-001",
+        read_labels: list[str] | None = None,
+        write_labels: list[str] | None = None,
+        sensitivity_max: str = "internal",
+        export_full: bool = False,
+        use_authorization: bool = False,
+    ) -> dict[str, str]:
+        payload = {
+            "sub": user_id,
+            "oamp_agent_id": agent_id,
+            "oamp_grant_id": grant_id,
+            "oamp_read_labels": read_labels or [],
+            "oamp_write_labels": write_labels or [],
+            "oamp_sensitivity_max": sensitivity_max,
+            "oamp_export_full": export_full,
+        }
+        token = jwt.encode(
+            payload,
+            settings.governance_grant_secret,
+            algorithm=settings.governance_grant_algorithm,
+        )
+        if use_authorization:
+            return {"Authorization": f"Bearer {token}"}
+        return {"OAMP-Grant": token}
 
     return _make
 

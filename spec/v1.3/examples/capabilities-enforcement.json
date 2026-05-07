@@ -1,0 +1,64 @@
+{
+  "oamp_version": "1.3.0",
+  "capabilities": {
+    "streaming": {
+      "supported": true,
+      "filter_keys": [
+        "user_id",
+        "event_type",
+        "sensitivity_class",
+        "governance_label"
+      ]
+    },
+    "as_of": {
+      "supported": true
+    },
+    "governance": {
+      "supported": true,
+      "sensitivity_classes": [
+        "public",
+        "internal",
+        "confidential",
+        "restricted"
+      ],
+      "labels_supported": true,
+      "extended_provenance_supported": true,
+      "withheld_stub_support": false,
+      "enforcement": {
+        "supported": true,
+        "spec_version": "1.3.0",
+        "label_hierarchy": "dotted-prefix",
+        "reserved_top_level_labels": [
+          "identity",
+          "location",
+          "health",
+          "finance",
+          "relationships",
+          "work",
+          "preferences",
+          "creative",
+          "beliefs",
+          "behaviour"
+        ],
+        "grant_transport": [
+          "jwt-claims",
+          "oamp-grant-header"
+        ],
+        "existence_hiding": true,
+        "stream_filtering": true,
+        "export_full_supported": true
+      }
+    },
+    "user_id_format": {
+      "description": "opaque string"
+    },
+    "id_preservation": "preserved",
+    "content_types": [
+      "application/json"
+    ],
+    "auth_schemes": [
+      "Bearer",
+      "OAMP-Grant"
+    ]
+  }
+}

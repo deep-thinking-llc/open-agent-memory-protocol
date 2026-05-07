@@ -1,0 +1,16 @@
+{
+  "sub": "user-123",
+  "oamp_agent_id": "coding-assistant-v9",
+  "oamp_grant_id": "grant-2026-05-07-001",
+  "oamp_read_labels": [
+    "work",
+    "preferences"
+  ],
+  "oamp_write_labels": [
+    "work",
+    "preferences"
+  ],
+  "oamp_sensitivity_max": "internal",
+  "oamp_export_full": false,
+  "exp": 1746662400
+}

@@ -119,7 +119,7 @@ func TestGovernedKnowledgeEntryRoundTrip(t *testing.T) {
 	turnID := "turn-1"
 	derived := false
 	entry := &KnowledgeEntry{
-		OAMPVersion: "1.2.0",
+		OAMPVersion: "1.3.0",
 		Type:        "knowledge_entry",
 		ID:          "550e8400-e29b-41d4-a716-446655440100",
 		UserID:      "user-alice-123",
@@ -159,8 +159,8 @@ func TestGovernedKnowledgeEntryRoundTrip(t *testing.T) {
 		t.Fatalf("Unmarshal: %v", err)
 	}
 
-	if parsed.OAMPVersion != "1.2.0" {
-		t.Errorf("OAMPVersion = %q, want %q", parsed.OAMPVersion, "1.2.0")
+	if parsed.OAMPVersion != "1.3.0" {
+		t.Errorf("OAMPVersion = %q, want %q", parsed.OAMPVersion, "1.3.0")
 	}
 	if parsed.Governance == nil || parsed.Governance.SensitivityClass != "internal" {
 		t.Fatalf("governance was not preserved")
@@ -211,6 +211,21 @@ func TestParseGovernedKnowledgeEntryExample(t *testing.T) {
 	}
 	if entry.Provenance == nil || len(entry.Provenance.Sources) != 2 {
 		t.Fatalf("provenance was not parsed")
+	}
+}
+
+func TestParseV13KnowledgeEntryFixture(t *testing.T) {
+	data, err := os.ReadFile("../../validators/test-fixtures/valid/v1.3-knowledge-entry.json")
+	if err != nil {
+		t.Skipf("v1.3 fixture not found: %v", err)
+	}
+
+	entry := MustParseKnowledgeEntry(data)
+	if entry.OAMPVersion != "1.3.0" {
+		t.Errorf("OAMPVersion = %q, want %q", entry.OAMPVersion, "1.3.0")
+	}
+	if entry.Governance == nil || len(entry.Governance.Labels) == 0 {
+		t.Fatalf("governance labels were not parsed")
 	}
 }
 

@@ -7,7 +7,9 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, Query, Request
 from oamp_types import KnowledgeEntry
 
-from ..api.errors import OampError, duplicate_id, not_found, validation_error, forbidden_patch
+from ..auth import extract_grant
+from ..config import Settings
+from ..api.errors import duplicate_id
 from ..services.knowledge import KnowledgeService
 
 
@@ -18,10 +20,16 @@ def _get_service(request: Request) -> KnowledgeService:
     return request.app.state.knowledge_service
 
 
+def _get_settings(request: Request) -> Settings:
+    return request.app.state.settings
+
+
 @router.post("/knowledge", status_code=201)
 async def create_knowledge(
+    request: Request,
     entry: KnowledgeEntry,
     service: KnowledgeService = Depends(_get_service),
+    settings: Settings = Depends(_get_settings),
 ) -> dict[str, Any]:
     """Store a new KnowledgeEntry.
 
@@ -34,12 +42,14 @@ async def create_knowledge(
     if existing is not None:
         raise duplicate_id("KnowledgeEntry", entry.id)
 
-    result = await service.create(entry)
+    grant = extract_grant(request, settings) if settings.governance_enforcement_enabled else None
+    result = await service.create(entry, grant=grant)
     return result.model_dump(mode="json", exclude_none=True)
 
 
 @router.get("/knowledge")
 async def list_or_search_knowledge(
+    request: Request,
     user_id: str,
     query: Optional[str] = None,
     category: Optional[str] = None,
@@ -48,6 +58,7 @@ async def list_or_search_knowledge(
     limit: int = 50,
     offset: int = 0,
     service: KnowledgeService = Depends(_get_service),
+    settings: Settings = Depends(_get_settings),
 ) -> list[dict[str, Any]]:
     """List or search knowledge entries for a user.
 
@@ -61,11 +72,13 @@ async def list_or_search_knowledge(
     limit = max(1, min(limit, 200))
     offset = max(0, offset)
 
+    grant = extract_grant(request, settings) if settings.governance_enforcement_enabled else None
     if query:
         entries = await service.search(
             query, user_id, category,
             sensitivity_classes=sensitivity_class,
             governance_labels=governance_label,
+            grant=grant,
             limit=limit, offset=offset,
         )
     else:
@@ -73,6 +86,7 @@ async def list_or_search_knowledge(
             user_id, category,
             sensitivity_classes=sensitivity_class,
             governance_labels=governance_label,
+            grant=grant,
             limit=limit, offset=offset,
         )
 
@@ -81,14 +95,17 @@ async def list_or_search_knowledge(
 
 @router.get("/knowledge/{entry_id}")
 async def get_knowledge(
+    request: Request,
     entry_id: str,
     service: KnowledgeService = Depends(_get_service),
+    settings: Settings = Depends(_get_settings),
 ) -> dict[str, Any]:
     """Retrieve a KnowledgeEntry by ID.
 
     Per spec Section 6.2: 200 OK or 404 Not Found.
     """
-    entry = await service.get(entry_id)
+    grant = extract_grant(request, settings) if settings.governance_enforcement_enabled else None
+    entry = await service.get(entry_id, grant=grant)
     return entry.model_dump(mode="json", exclude_none=True)
 
 

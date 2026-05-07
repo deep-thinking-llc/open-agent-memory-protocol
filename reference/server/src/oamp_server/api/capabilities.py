@@ -2,17 +2,18 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 
 router = APIRouter(tags=["Capabilities"])
 
 
 @router.get("/capabilities")
-async def get_capabilities() -> dict[str, object]:
+async def get_capabilities(request: Request) -> dict[str, object]:
     """Advertise optional OAMP capabilities supported by the reference backend."""
+    settings = request.app.state.settings
     return {
-        "oamp_version": "1.2.0",
+        "oamp_version": "1.3.0",
         "capabilities": {
             "streaming": {
                 "supported": False,
@@ -27,12 +28,33 @@ async def get_capabilities() -> dict[str, object]:
                 "labels_supported": True,
                 "extended_provenance_supported": True,
                 "withheld_stub_support": False,
+                "enforcement": {
+                    "supported": settings.governance_enforcement_enabled,
+                    "spec_version": "1.3.0",
+                    "label_hierarchy": "dotted-prefix",
+                    "reserved_top_level_labels": [
+                        "identity",
+                        "location",
+                        "health",
+                        "finance",
+                        "relationships",
+                        "work",
+                        "preferences",
+                        "creative",
+                        "beliefs",
+                        "behaviour",
+                    ],
+                    "grant_transport": ["jwt-claims", "oamp-grant-header"],
+                    "existence_hiding": True,
+                    "stream_filtering": False,
+                    "export_full_supported": True,
+                },
             },
             "user_id_format": {
                 "description": "opaque string",
             },
             "id_preservation": "preserved",
             "content_types": ["application/json"],
-            "auth_schemes": [],
+            "auth_schemes": ["Bearer", "OAMP-Grant"],
         },
     }

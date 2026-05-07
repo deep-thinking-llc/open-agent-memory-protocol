@@ -1,6 +1,6 @@
 # Open Agent Memory Protocol — Elixir Reference
 
-Elixir types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 governed-memory draft.
+Elixir types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 / v1.3.0 governed-memory draft lines.
 
 ## Installation
 
@@ -57,11 +57,11 @@ model = %{model | communication: %OampTypes.UserModel.CommunicationProfile{
 
 ## Governed Memory
 
-`OampTypes.Knowledge.Entry` and `OampTypes.Knowledge.Store` accept the additive v1.2 governed-memory fields:
+`OampTypes.Knowledge.Entry` and `OampTypes.Knowledge.Store` accept the additive governed-memory fields reused by the v1.2 and v1.3 drafts:
 - `provenance` for multi-source lineage
 - `governance` for sensitivity classes, labels, and handling hints
 
-Use `oamp_version: "1.2.0"` when producing governed-memory documents.
+Use `oamp_version: "1.2.0"` or `"1.3.0"` when producing governed-memory documents.
 
 ## Types
 
@@ -117,7 +117,7 @@ errors = OampTypes.Validate.validate_user_model(model)
 
 An empty list means valid. Validation checks:
 - Required field presence
-- Knowledge `oamp_version` is `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
+- Knowledge `oamp_version` is `"1.0.0"`, `"1.1.0"`, `"1.2.0"`, or `"1.3.0"`
 - `confidence` in [0.0, 1.0]
 - Communication profiles ranges
 - Required `source.session_id`

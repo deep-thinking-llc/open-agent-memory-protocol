@@ -1,6 +1,6 @@
 # Proposal: OAMP Permissioned Memory (v1.3 enforcement companion to v1.2 governed metadata)
 
-**Status:** Draft proposal for community review
+**Status:** Proposal draft, now superseded by `spec/v1.3/oamp-v1.3-draft.md`
 **Target version:** v1.3 (additive over v1.0 / v1.1 / v1.2)
 **Date:** 2026-05-07
 **Authors:** Deep Thinking LLC

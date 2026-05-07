@@ -273,7 +273,7 @@ class TestKnowledgeEntrySerialization:
 
     def test_roundtrip_preserves_governance_and_provenance(self):
         entry = KnowledgeEntry(
-            oamp_version="1.2.0",
+            oamp_version="1.3.0",
             user_id="user-1",
             category=KnowledgeCategory.preference,
             content="User wants governed summaries.",
@@ -294,7 +294,7 @@ class TestKnowledgeEntrySerialization:
             ),
         )
         parsed = KnowledgeEntry.model_validate_json(entry.model_dump_json(exclude_none=True))
-        assert parsed.oamp_version == "1.2.0"
+        assert parsed.oamp_version == "1.3.0"
         assert parsed.governance.labels == ["finance", "ops"]
         assert parsed.provenance.sources[0].turn_id == "turn-2"
 

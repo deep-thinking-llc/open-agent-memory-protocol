@@ -7,6 +7,7 @@ Related drafts:
 
 - `spec/v1.2/oamp-v1.2-governed-memory-draft.md`
 - `spec/v1.2/oamp-v1.2-draft.md`
+- `spec/v1.3/oamp-v1.3-draft.md`
 - `spec/v2.0/oamp-v2.0-withheld-results-rfc.md`
 
 ---
@@ -18,6 +19,7 @@ Related drafts:
 Decide and document:
 
 - `v1.2` standardizes additive governed-memory metadata and richer provenance
+- `v1.3` standardizes enforcement of that metadata at the agent boundary
 - `v2.0` handles portable withheld/redacted result semantics
 
 Why first:

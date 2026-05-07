@@ -49,7 +49,7 @@ def make_governed_knowledge_entry(
     session_id: str = "compliance-session",
     entry_id: str | None = None,
 ) -> dict[str, Any]:
-    """Create a valid v1.2 KnowledgeEntry with governance and provenance."""
+    """Create a valid governed KnowledgeEntry with governance and provenance."""
     entry = make_knowledge_entry(
         user_id=user_id,
         category=category,
@@ -58,7 +58,7 @@ def make_governed_knowledge_entry(
         session_id=session_id,
         entry_id=entry_id,
     )
-    entry["oamp_version"] = "1.2.0"
+    entry["oamp_version"] = "1.3.0"
     entry["provenance"] = {
         "sources": [
             {

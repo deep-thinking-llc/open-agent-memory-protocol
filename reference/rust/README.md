@@ -1,6 +1,6 @@
 # Open Agent Memory Protocol — Rust Reference
 
-Rust types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 governed-memory draft.
+Rust types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 / v1.3.0 governed-memory draft lines.
 
 Built on `serde` for serialization, `chrono` for timestamps, and `uuid` for identifiers.
 
@@ -55,11 +55,11 @@ let store = KnowledgeStore::new("user-123", vec![entry]);
 
 ## Governed Memory
 
-`KnowledgeEntry` and `KnowledgeStore` now support the additive v1.2 governed-memory fields:
+`KnowledgeEntry` and `KnowledgeStore` now support the additive governed-memory fields reused by both the v1.2 and v1.3 drafts:
 - `provenance` for multi-source lineage
 - `governance` for sensitivity classes, labels, and handling hints
 
-Set `entry.oamp_version = "1.2.0".to_string()` when producing governed-memory documents.
+Set `entry.oamp_version = "1.2.0".to_string()` or `"1.3.0".to_string()` when producing governed-memory documents.
 
 ## Types
 
@@ -150,7 +150,7 @@ match validate::validate_knowledge_entry(&entry) {
 
 Validation checks:
 - Required fields are present
-- knowledge `oamp_version` is `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
+- knowledge `oamp_version` is `"1.0.0"`, `"1.1.0"`, `"1.2.0"`, or `"1.3.0"`
 - `type` matches the expected discriminator
 - `confidence` is in `[0.0, 1.0]`
 - Communication profile ranges (`verbosity`, `formality`) are in `[-1.0, 1.0]`

@@ -19,6 +19,7 @@ fi
 VERSION=$(python3 -c "import json; print(json.load(open('$DOC')).get('oamp_version', '1.0.0'))" 2>/dev/null || echo "1.0.0")
 
 case "$VERSION" in
+    1.3.0) SPEC_DIR="$SCRIPT_DIR/../spec/v1.3" ;;
     1.2.0) SPEC_DIR="$SCRIPT_DIR/../spec/v1.2" ;;
     *) SPEC_DIR="$SCRIPT_DIR/../spec/v1" ;;
 esac

@@ -44,7 +44,7 @@ fn test_governed_knowledge_entry_roundtrip() {
         0.9,
         "sess-1",
     );
-    entry.oamp_version = "1.2.0".to_string();
+    entry.oamp_version = "1.3.0".to_string();
     entry.governance = Some(Governance {
         sensitivity_class: "internal".to_string(),
         labels: vec!["finance".into(), "ops".into()],
@@ -66,7 +66,7 @@ fn test_governed_knowledge_entry_roundtrip() {
 
     let json = serde_json::to_string_pretty(&entry).unwrap();
     let parsed: KnowledgeEntry = serde_json::from_str(&json).unwrap();
-    assert_eq!(parsed.oamp_version, "1.2.0");
+    assert_eq!(parsed.oamp_version, "1.3.0");
     assert_eq!(parsed.governance.unwrap().labels.len(), 2);
     assert_eq!(
         parsed.provenance.unwrap().sources[0].turn_id.as_deref(),
@@ -155,6 +155,19 @@ fn test_parse_governed_example_knowledge_entry() {
             .turn_id
             .as_deref(),
         Some("turn-3")
+    );
+}
+
+#[test]
+fn test_parse_v13_fixture() {
+    let json =
+        std::fs::read_to_string("../../validators/test-fixtures/valid/v1.3-knowledge-entry.json")
+            .unwrap();
+    let entry: KnowledgeEntry = serde_json::from_str(&json).unwrap();
+    assert_eq!(entry.oamp_version, "1.3.0");
+    assert_eq!(
+        entry.governance.as_ref().unwrap().labels[0],
+        "work.code"
     );
 }
 

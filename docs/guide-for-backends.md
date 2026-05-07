@@ -27,6 +27,7 @@ Your backend SHOULD also implement:
 |--------|------|-------------|
 | POST | /v1/admin/keys/rotate | Rotate encryption key |
 | GET | /v1/admin/audit | Query audit log |
+| GET | /v1/capabilities | Advertise optional v1.1/v1.2/v1.3 support |
 | GET | /health | Health check |
 
 ## Storage Requirements
@@ -55,8 +56,23 @@ Support at minimum `application/json`. Optionally support `application/protobuf`
 - [ ] Export endpoint returns ALL user data
 - [ ] No knowledge content in server logs
 - [ ] Every stored entry has provenance (source with session_id + timestamp)
+- [ ] If you advertise v1.2 governance support, preserve `governance` and `provenance`
+- [ ] If you advertise v1.3 enforcement support, apply the same grant filter to read, write, import, export, and stream paths
+- [ ] If you advertise v1.3 enforcement support, hide out-of-scope IDs as `404` on agent surfaces
 - [ ] Search returns results ranked by relevance
 - [ ] All knowledge endpoints scoped to user_id (no cross-user leakage)
 - [ ] Rate limiting on all endpoints
 - [ ] TLS 1.2 minimum for production
 - [ ] Audit logging enabled (SHOULD)
+
+## Governed Memory Versions
+
+- `v1.2` standardizes descriptive governed-memory metadata and richer provenance.
+- `v1.3` standardizes enforcement of that metadata at the agent boundary.
+- `v2.0` is still the home for portable withheld/redacted result semantics.
+
+If your backend implements governed memory today, the recommended path is:
+
+1. Preserve `governance` and `provenance` per `spec/v1.2/oamp-v1.2-draft.md`
+2. Advertise `capabilities.governance`
+3. Add `capabilities.governance.enforcement` and enforce grant-based filtering per `spec/v1.3/oamp-v1.3-draft.md`

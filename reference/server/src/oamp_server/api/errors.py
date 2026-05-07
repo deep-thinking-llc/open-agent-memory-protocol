@@ -44,3 +44,11 @@ def forbidden_patch(field: str) -> OampError:
 
 def duplicate_id(resource_type: str, resource_id: str) -> OampError:
     return OampError(409, f"{resource_type} already exists: {resource_id}", "DUPLICATE_ID")
+
+
+def forbidden(msg: str, code: str = "FORBIDDEN") -> OampError:
+    return OampError(403, msg, code)
+
+
+def unauthorized(msg: str) -> OampError:
+    return OampError(401, msg, "UNAUTHORIZED")

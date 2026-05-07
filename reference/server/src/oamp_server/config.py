@@ -43,3 +43,18 @@ class Settings:
             "OAMP_AUDIT_LOG", "true"
         ).lower() in ("true", "1", "yes")
     )
+    governance_enforcement_enabled: bool = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_GOVERNANCE_ENFORCEMENT", "true"
+        ).lower() in ("true", "1", "yes")
+    )
+    governance_grant_secret: str = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_GOVERNANCE_GRANT_SECRET", "oamp-dev-grant-secret-32-bytes-min"
+        )
+    )
+    governance_grant_algorithm: str = field(
+        default_factory=lambda: os.environ.get(
+            "OAMP_GOVERNANCE_GRANT_ALGORITHM", "HS256"
+        )
+    )

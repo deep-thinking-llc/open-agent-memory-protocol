@@ -16,7 +16,7 @@ import re
 from .knowledge import KnowledgeEntry, KnowledgeStore
 from .user_model import UserModel
 
-SUPPORTED_KNOWLEDGE_VERSIONS = {"1.0.0", "1.1.0", "1.2.0"}
+SUPPORTED_KNOWLEDGE_VERSIONS = {"1.0.0", "1.1.0", "1.2.0", "1.3.0"}
 
 # Loose UUID v4 pattern for validation
 _UUID_RE = re.compile(
@@ -33,7 +33,7 @@ def validate_knowledge_entry(entry: KnowledgeEntry) -> list[str]:
         errors.append("oamp_version is required")
     elif entry.oamp_version not in SUPPORTED_KNOWLEDGE_VERSIONS:
         errors.append(
-            "oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', "
+            "oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', "
             f"got '{entry.oamp_version}'"
         )
 
@@ -71,7 +71,7 @@ def validate_knowledge_store(store: KnowledgeStore) -> list[str]:
         errors.append("oamp_version is required")
     elif store.oamp_version not in SUPPORTED_KNOWLEDGE_VERSIONS:
         errors.append(
-            "oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', "
+            "oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', "
             f"got '{store.oamp_version}'"
         )
 

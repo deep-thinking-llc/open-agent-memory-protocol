@@ -5,8 +5,9 @@ Python types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep
 Built on [Pydantic v2](https://docs.pydantic.dev/) for validation and serialization.
 
 The current reference package preserves the stable v1.0 document model and also
-parses additive `v1.1.0` / `v1.2.0` knowledge documents, including optional
-governance and extended provenance fields introduced by the `v1.2` draft.
+parses additive `v1.1.0` / `v1.2.0` / `v1.3.0` knowledge documents, including
+optional governance and extended provenance fields introduced by the `v1.2`
+draft and reused by the `v1.3` enforcement line.
 
 ## Install
 
@@ -77,9 +78,9 @@ model.expertise.append(
 # Bulk export
 store = KnowledgeStore(user_id="user-123", entries=[entry])
 
-# v1.2 governed memory
+# v1.2 / v1.3 governed memory
 governed = KnowledgeEntry(
-    oamp_version="1.2.0",
+    oamp_version="1.3.0",
     user_id="user-123",
     category=KnowledgeCategory.fact,
     content="User can review finance approvals.",
@@ -129,7 +130,7 @@ Two levels of validation are provided:
 Creating or parsing models through Pydantic automatically validates:
 - Required fields must be present
 - user-model documents must keep `oamp_version` at `"1.0.0"`
-- knowledge documents may use `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
+- knowledge documents may use `"1.0.0"`, `"1.1.0"`, `"1.2.0"`, or `"1.3.0"`
 - `type` must match the expected document type
 - `confidence` must be in [0.0, 1.0]
 - String fields must not be empty where required

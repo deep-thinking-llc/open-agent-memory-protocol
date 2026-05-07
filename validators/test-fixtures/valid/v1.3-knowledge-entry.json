@@ -1,0 +1,37 @@
+{
+  "oamp_version": "1.3.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440030",
+  "user_id": "user-v13",
+  "category": "fact",
+  "content": "The user shares work notes with the coding assistant.",
+  "confidence": 0.92,
+  "source": {
+    "session_id": "sess-v13-01",
+    "agent_id": "coding-assistant-v9",
+    "timestamp": "2026-05-07T12:00:00Z"
+  },
+  "governance": {
+    "sensitivity_class": "internal",
+    "labels": [
+      "work.code",
+      "preferences"
+    ],
+    "handling": {
+      "retrieval": "governed",
+      "export": "governed",
+      "stream": "governed"
+    }
+  },
+  "provenance": {
+    "sources": [
+      {
+        "session_id": "sess-v13-01",
+        "agent_id": "coding-assistant-v9",
+        "timestamp": "2026-05-07T12:00:00Z",
+        "turn_id": "turn-1"
+      }
+    ],
+    "derived": false
+  }
+}

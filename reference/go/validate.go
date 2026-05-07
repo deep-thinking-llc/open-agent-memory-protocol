@@ -10,7 +10,7 @@ import (
 var uuidPattern = regexp.MustCompile(`^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$`)
 
 func isSupportedKnowledgeVersion(version string) bool {
-	return version == "1.0.0" || version == "1.1.0" || version == "1.2.0"
+	return version == "1.0.0" || version == "1.1.0" || version == "1.2.0" || version == "1.3.0"
 }
 
 // ValidateKnowledgeEntry validates a KnowledgeEntry and returns a list of errors.
@@ -20,7 +20,7 @@ func ValidateKnowledgeEntry(e *KnowledgeEntry) []string {
 	if e.OAMPVersion == "" {
 		errors = append(errors, "oamp_version is required")
 	} else if !isSupportedKnowledgeVersion(e.OAMPVersion) {
-		errors = append(errors, fmt.Sprintf("oamp_version must be one of %q, %q, or %q, got %q", "1.0.0", "1.1.0", "1.2.0", e.OAMPVersion))
+		errors = append(errors, fmt.Sprintf("oamp_version must be one of %q, %q, %q, or %q, got %q", "1.0.0", "1.1.0", "1.2.0", "1.3.0", e.OAMPVersion))
 	}
 
 	if e.Type != "knowledge_entry" {
@@ -74,7 +74,7 @@ func ValidateKnowledgeStore(s *KnowledgeStore) []string {
 	if s.OAMPVersion == "" {
 		errors = append(errors, "oamp_version is required")
 	} else if !isSupportedKnowledgeVersion(s.OAMPVersion) {
-		errors = append(errors, fmt.Sprintf("oamp_version must be one of %q, %q, or %q, got %q", "1.0.0", "1.1.0", "1.2.0", s.OAMPVersion))
+		errors = append(errors, fmt.Sprintf("oamp_version must be one of %q, %q, %q, or %q, got %q", "1.0.0", "1.1.0", "1.2.0", "1.3.0", s.OAMPVersion))
 	}
 
 	if s.Type != "knowledge_store" {

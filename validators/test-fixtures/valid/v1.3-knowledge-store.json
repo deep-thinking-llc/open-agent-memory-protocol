@@ -1,0 +1,28 @@
+{
+  "oamp_version": "1.3.0",
+  "type": "knowledge_store",
+  "user_id": "user-v13",
+  "entries": [
+    {
+      "oamp_version": "1.3.0",
+      "type": "knowledge_entry",
+      "id": "550e8400-e29b-41d4-a716-446655440031",
+      "user_id": "user-v13",
+      "category": "preference",
+      "content": "The user prefers concise code review comments.",
+      "confidence": 0.88,
+      "source": {
+        "session_id": "sess-v13-02",
+        "timestamp": "2026-05-07T12:05:00Z"
+      },
+      "governance": {
+        "sensitivity_class": "internal",
+        "labels": [
+          "preferences"
+        ]
+      }
+    }
+  ],
+  "exported_at": "2026-05-07T12:10:00Z",
+  "agent_id": "coding-assistant-v9"
+}

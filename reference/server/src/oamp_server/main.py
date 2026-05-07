@@ -49,7 +49,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             "OAMP defines a standard format for storing, exchanging, and querying "
             "memory data between AI agents and memory backends."
         ),
-        version="1.0.1",
+        version="1.3.0-draft",
         lifespan=lifespan,
     )
 

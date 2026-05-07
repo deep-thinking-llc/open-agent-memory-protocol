@@ -12,9 +12,10 @@ FastAPI-based reference implementation of the Open Agent Memory Protocol backend
 - **FTS5 full-text search** with Porter stemming for knowledge entry queries
 - **Version conflict detection** for User Model updates (monotonic `model_version`)
 - **Bulk export/import** via `KnowledgeStore` format
-- **v1.2 governed-memory draft support** — optional `governance`,
-  extended `provenance`, capabilities discovery, and governance-aware
-  list/search filters
+- **v1.3 governed-memory enforcement support** — optional `governance`,
+  extended `provenance`, capabilities discovery, governance-aware list/search
+  filters, signed grant parsing, omission-based read/export enforcement, and
+  import rejection counts
 - **OpenAPI/Swagger UI** auto-generated at `/docs`
 - **JSON error responses** per spec Section 6.8
 
@@ -65,7 +66,7 @@ PYTHONPATH=src pytest tests/ -v
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/v1/capabilities` | Advertise optional governance support and filter keys |
+| `GET` | `/v1/capabilities` | Advertise optional governance support, enforcement, and filter keys |
 
 ### Admin
 
@@ -122,6 +123,24 @@ Per spec §8.2.6, all CRUD operations are logged to an `audit_log` table. The au
 | `OAMP_ENCRYPTION_KEY_DIR` | `./keys` | Directory for encryption key files |
 | `OAMP_ENCRYPTION_PROVIDER` | `local` | Key provider: `local` (dev), `aws-kms`, `vault` (future) |
 | `OAMP_AUDIT_LOG` | `true` | Enable/disable audit logging |
+| `OAMP_GOVERNANCE_ENFORCEMENT` | `true` | Enable v1.3 grant-aware enforcement on agent surfaces |
+| `OAMP_GOVERNANCE_GRANT_SECRET` | `oamp-dev-grant-secret` | HMAC secret for Bearer/OAMP-Grant tokens |
+| `OAMP_GOVERNANCE_GRANT_ALGORITHM` | `HS256` | JWT/JWS algorithm for grant decoding |
+
+## v1.3 Enforcement Notes
+
+The reference server implements the omission-based `v1.3` enforcement contract:
+
+- grant tokens may be sent via `Authorization: Bearer <jwt>` or `OAMP-Grant: <jws>`
+- read/list/get/export paths omit out-of-scope entries
+- `GET /v1/knowledge/{id}` returns `404` for out-of-scope agent reads
+- grant-bound writes require `source.agent_id == oamp_agent_id`
+- import responses count out-of-scope entries in `rejected`
+
+If no grant token is presented, the reference server behaves as a direct-user
+surface and returns the caller's full user-scoped view. This keeps the server
+useful as a simple reference backend while still providing an executable `v1.3`
+example for agent surfaces.
 
 ## Architecture
 

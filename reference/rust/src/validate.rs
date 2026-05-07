@@ -1,7 +1,7 @@
 use crate::{KnowledgeEntry, KnowledgeStore, UserModel};
 
 fn is_supported_knowledge_version(version: &str) -> bool {
-    matches!(version, "1.0.0" | "1.1.0" | "1.2.0")
+    matches!(version, "1.0.0" | "1.1.0" | "1.2.0" | "1.3.0")
 }
 
 /// Validate a KnowledgeEntry.
@@ -12,7 +12,7 @@ pub fn validate_knowledge_entry(entry: &KnowledgeEntry) -> Result<(), Vec<String
         errors.push("oamp_version is required".into());
     } else if !is_supported_knowledge_version(&entry.oamp_version) {
         errors.push(format!(
-            "oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', got '{}'",
+            "oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', got '{}'",
             entry.oamp_version
         ));
     }
@@ -61,7 +61,7 @@ pub fn validate_knowledge_store(store: &KnowledgeStore) -> Result<(), Vec<String
         errors.push("oamp_version is required".into());
     } else if !is_supported_knowledge_version(&store.oamp_version) {
         errors.push(format!(
-            "oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', got '{}'",
+            "oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', got '{}'",
             store.oamp_version
         ));
     }

@@ -332,4 +332,7 @@ def test_capabilities(client: OAMPClient) -> TestResult:
         return TestResult("FUNC-16", "Capabilities", TestResult.FAIL, "governance.supported was not true")
     if not governance.get("extended_provenance_supported"):
         return TestResult("FUNC-16", "Capabilities", TestResult.FAIL, "extended_provenance_supported missing")
+    enforcement = governance.get("enforcement")
+    if enforcement is not None and "supported" not in enforcement:
+        return TestResult("FUNC-16", "Capabilities", TestResult.FAIL, "governance.enforcement.supported missing")
     return TestResult("FUNC-16", "Capabilities", TestResult.PASS)

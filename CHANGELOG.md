@@ -44,6 +44,40 @@ All notable changes to this project will be documented in this file.
 - Standard stream-level withheld event semantics
 - Cross-backend authorization policy language
 
+## [1.3.0-draft] — 2026-05-07
+
+### Added (proposed, draft for community review)
+- **`spec/v1.3/oamp-v1.3-draft.md`** — normative draft for governed-memory
+  enforcement, reusing the v1.2 descriptive metadata model.
+- **Concrete v1.3 contract artifacts**:
+  - `spec/v1.3/knowledge-entry.schema.json`
+  - `spec/v1.3/knowledge-store.schema.json`
+  - `spec/v1.3/openapi.yaml`
+  - `spec/v1.3/examples/*`
+- **Validator support for `1.3.0` documents** via `validators/validate.sh` and
+  new v1.3 fixtures.
+- **Reference backend enforcement example**:
+  - signed grant parsing via Bearer JWT or `OAMP-Grant`
+  - omission-based read/export filtering
+  - 404 existence hiding on agent get-by-id
+  - write-scope rejection and import rejection counts
+  - `/v1/capabilities` enforcement advertisement
+- **Reference library compatibility updates**:
+  - Python, TypeScript, Rust, and Go validators accept `1.3.0`
+  - round-trip tests cover v1.3 fixtures
+
+### Proposed scope
+- Portable agent grant claims
+- Hierarchical label matching for enforcement
+- Read/write/import/export filtering rules
+- Existence hiding on agent surfaces
+- Enforcement capabilities advertisement
+
+### Explicitly deferred
+- Portable withheld/redacted result documents
+- Portable `withholding_reason` envelopes
+- Stream-level withheld event payloads
+
 ## [1.1.0-draft] — 2026-05-02
 
 ### Added (proposed, draft for community review)

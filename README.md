@@ -4,7 +4,7 @@
 
 ### Your AI agent's memory should belong to you.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](spec/v1.2/oamp-v1.2-draft.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.3.0--draft-blue.svg)](spec/v1.3/oamp-v1.3-draft.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Rust Crate](https://img.shields.io/crates/v/oamp-types.svg)](https://crates.io/crates/oamp-types)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -12,11 +12,11 @@
 [![Go Reference](https://img.shields.io/badge/go-reference-blue.svg)](reference/go/)
 [![Hex Package](https://img.shields.io/badge/hex-oamp__types-purple.svg)](https://hex.pm/packages/oamp_types)
 
-[Stable Spec](spec/v1/oamp-v1.md) | [Latest Draft](spec/v1.2/oamp-v1.2-draft.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
+[Stable Spec](spec/v1/oamp-v1.md) | [Latest Draft](spec/v1.3/oamp-v1.3-draft.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
 
-Draft extensions: [v1.1](spec/v1.1/oamp-v1.1-draft.md) | [v1.2 governed memory](spec/v1.2/oamp-v1.2-draft.md)
+Draft extensions: [v1.1](spec/v1.1/oamp-v1.1-draft.md) | [v1.2 governed memory metadata](spec/v1.2/oamp-v1.2-draft.md) | [v1.3 governed memory enforcement](spec/v1.3/oamp-v1.3-draft.md)
 
-The reference Python, TypeScript, Rust, Go, and Elixir libraries all parse the additive v1.2 governed-memory fields on `KnowledgeEntry` and `KnowledgeStore`.
+The reference Python, TypeScript, Rust, Go, and Elixir libraries all parse the additive governed-memory entry/store shape used by both the `v1.2` and `v1.3` draft lines.
 
 ---
 
@@ -254,6 +254,11 @@ spec/v1.2/
   *.schema.json            Additive v1.2 schema definitions
   examples/                Governed-memory example documents
 
+spec/v1.3/
+  oamp-v1.3-draft.md       Governed-memory enforcement draft
+  *.schema.json            Additive v1.3 schema definitions
+  examples/                Enforcement examples and grant claims
+
 proto/oamp/v1/             Protocol Buffer definitions
 
 reference/
@@ -319,11 +324,11 @@ Build an OAMP-compliant memory store:
 | | |
 |:---|:---|
 | **Current stable version** | v1.0.0 |
-| **Latest draft version** | v1.2.0-draft |
+| **Latest draft version** | v1.3.0-draft |
 | **Schema format** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **Compliance language** | RFC 2119 (MUST, SHOULD, MAY) |
 | **Stable spec** | [spec/v1/oamp-v1.md](spec/v1/oamp-v1.md) |
-| **Latest draft spec** | [spec/v1.2/oamp-v1.2-draft.md](spec/v1.2/oamp-v1.2-draft.md) |
+| **Latest draft spec** | [spec/v1.3/oamp-v1.3-draft.md](spec/v1.3/oamp-v1.3-draft.md) |
 
 ### Planned for v2.0
 

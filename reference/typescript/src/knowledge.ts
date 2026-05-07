@@ -43,7 +43,7 @@ export const KnowledgeDecay = z.object({
 });
 
 export const KnowledgeEntry = z.object({
-  oamp_version: z.enum(['1.0.0', '1.1.0', '1.2.0']),
+  oamp_version: z.enum(['1.0.0', '1.1.0', '1.2.0', '1.3.0']),
   type: z.literal('knowledge_entry'),
   id: z.string().uuid(),
   user_id: z.string().min(1),
@@ -60,7 +60,7 @@ export const KnowledgeEntry = z.object({
 export type KnowledgeEntry = z.infer<typeof KnowledgeEntry>;
 
 export const KnowledgeStore = z.object({
-  oamp_version: z.enum(['1.0.0', '1.1.0', '1.2.0']),
+  oamp_version: z.enum(['1.0.0', '1.1.0', '1.2.0', '1.3.0']),
   type: z.literal('knowledge_store'),
   user_id: z.string().min(1),
   entries: z.array(KnowledgeEntry),

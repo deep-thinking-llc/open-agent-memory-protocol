@@ -1,6 +1,6 @@
 # Open Agent Memory Protocol — Go Reference
 
-Go types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 governed-memory draft.
+Go types for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 / v1.3.0 governed-memory draft lines.
 
 ## Installation
 
@@ -59,11 +59,11 @@ func main() {
 
 ## Governed Memory
 
-`KnowledgeEntry` and `KnowledgeStore` accept the additive v1.2 governed-memory fields:
+`KnowledgeEntry` and `KnowledgeStore` accept the additive governed-memory fields reused by the v1.2 and v1.3 drafts:
 - `Provenance` for multi-source lineage
 - `Governance` for sensitivity classes, labels, and handling hints
 
-Use `OAMPVersion: "1.2.0"` when producing governed-memory documents.
+Use `OAMPVersion: "1.2.0"` or `OAMPVersion: "1.3.0"` when producing governed-memory documents.
 
 ## Types
 
@@ -132,7 +132,7 @@ errors := oamp.ValidateUserModel(model)
 
 An empty slice means valid. Validation checks:
 - Required field presence
-- Knowledge `OAMPVersion` must be `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
+- Knowledge `OAMPVersion` must be `"1.0.0"`, `"1.1.0"`, `"1.2.0"`, or `"1.3.0"`
 - `confidence` in [0.0, 1.0]
 - Communication ranges (`verbosity`, `formality`) in [-1.0, 1.0]
 - UUID validity

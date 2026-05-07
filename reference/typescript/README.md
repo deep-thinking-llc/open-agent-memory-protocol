@@ -1,6 +1,6 @@
 # Open Agent Memory Protocol — TypeScript Reference
 
-TypeScript types and validators for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 governed-memory draft.
+TypeScript types and validators for the [Open Agent Memory Protocol (OAMP)](https://github.com/deep-thinking-llc/open-agent-memory-protocol) knowledge documents in v1.0.0, v1.1.0, and the additive v1.2.0 / v1.3.0 governed-memory draft lines.
 
 Built on [Zod](https://zod.dev/) schemas for runtime validation with automatic TypeScript type inference.
 
@@ -38,11 +38,11 @@ The `KnowledgeEntry.parse()` call validates at runtime (via Zod) and returns a t
 
 ## Governed Memory
 
-Knowledge documents also accept the additive v1.2 governed-memory fields:
+Knowledge documents also accept the additive v1.2 governed-memory fields used by the v1.3 enforcement line:
 - optional `provenance` for multi-source lineage
 - optional `governance` for sensitivity classes, labels, and handling hints
 
-If you are producing governed-memory documents, set `oamp_version` to `"1.2.0"`.
+If you are producing governed-memory documents, set `oamp_version` to `"1.2.0"` or `"1.3.0"`.
 
 ## User Model Example
 
@@ -131,7 +131,7 @@ enum ExpertiseLevel {
 
 All schemas are built with Zod and validate on `parse()`. Validation catches:
 - Required field presence
-- knowledge `oamp_version` must be `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
+- knowledge `oamp_version` must be `"1.0.0"`, `"1.1.0"`, `"1.2.0"`, or `"1.3.0"`
 - `type` must match the expected discriminator
 - `confidence` in [0.0, 1.0]
 - UUID v4 format for `id`

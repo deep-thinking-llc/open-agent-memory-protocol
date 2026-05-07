@@ -52,6 +52,13 @@ describe('KnowledgeEntry validation', () => {
     expect(entry.governance?.sensitivity_class).toBe('confidential');
     expect(entry.provenance?.sources[0].turn_id).toBe('turn-3');
   });
+
+  it('parses v1.3 validator fixture', () => {
+    const json = fs.readFileSync(path.join(__dirname, '../../../../validators/test-fixtures/valid/v1.3-knowledge-entry.json'), 'utf-8');
+    const entry = KnowledgeEntry.parse(JSON.parse(json));
+    expect(entry.oamp_version).toBe('1.3.0');
+    expect(entry.governance?.labels).toContain('work.code');
+  });
 });
 
 describe('UserModel validation', () => {

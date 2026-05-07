@@ -131,8 +131,8 @@ class KnowledgeEntry(BaseModel):
     @field_validator("oamp_version")
     @classmethod
     def oamp_version_must_be_current(cls, v: str) -> str:
-        if v not in {"1.0.0", "1.1.0", "1.2.0"}:
-            raise ValueError(f"oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', got '{v}'")
+        if v not in {"1.0.0", "1.1.0", "1.2.0", "1.3.0"}:
+            raise ValueError(f"oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', got '{v}'")
         return v
 
     @field_validator("type")
@@ -179,8 +179,8 @@ class KnowledgeStore(BaseModel):
     @field_validator("oamp_version")
     @classmethod
     def oamp_version_must_be_current(cls, v: str) -> str:
-        if v not in {"1.0.0", "1.1.0", "1.2.0"}:
-            raise ValueError(f"oamp_version must be one of '1.0.0', '1.1.0', or '1.2.0', got '{v}'")
+        if v not in {"1.0.0", "1.1.0", "1.2.0", "1.3.0"}:
+            raise ValueError(f"oamp_version must be one of '1.0.0', '1.1.0', '1.2.0', or '1.3.0', got '{v}'")
         return v
 
     @field_validator("type")
