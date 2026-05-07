@@ -12,6 +12,10 @@ from typing import Any
 from .tests.utils import TestResult
 
 
+REPORT_SPEC_LINE = "v1.x"
+REPORT_SPEC_COVERAGE = "stable v1.0.0 + additive v1.2.0-draft coverage"
+
+
 def generate_report(
     results: list[TestResult],
     server_url: str,
@@ -44,9 +48,10 @@ def _generate_text(results: list[TestResult], server_url: str) -> str:
     summary = _summarize(results)
     lines = [
         "=" * 60,
-        f"OAMP v1.0.0 Compliance Report",
+        f"OAMP {REPORT_SPEC_LINE} Compliance Report",
         f"Server: {server_url}",
         f"Date: {datetime.now(timezone.utc).isoformat()}",
+        f"Coverage: {REPORT_SPEC_COVERAGE}",
         "=" * 60,
         "",
     ]
@@ -86,6 +91,8 @@ def _generate_json(results: list[TestResult], server_url: str) -> str:
     summary = _summarize(results)
     report: dict[str, Any] = {
         "oamp_version": "1.0.0",
+        "oamp_spec_line": REPORT_SPEC_LINE,
+        "oamp_spec_coverage": REPORT_SPEC_COVERAGE,
         "server_url": server_url,
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "summary": summary,
@@ -98,10 +105,11 @@ def _generate_json(results: list[TestResult], server_url: str) -> str:
 def _generate_markdown(results: list[TestResult], server_url: str) -> str:
     summary = _summarize(results)
     lines = [
-        f"# OAMP v1.0.0 Compliance Report",
+        f"# OAMP {REPORT_SPEC_LINE} Compliance Report",
         f"",
         f"**Server**: {server_url}",
         f"**Date**: {datetime.now(timezone.utc).isoformat()}",
+        f"**Coverage**: {REPORT_SPEC_COVERAGE}",
         f"",
         f"## Summary",
         f"",

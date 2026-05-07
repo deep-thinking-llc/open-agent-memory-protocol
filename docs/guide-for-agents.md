@@ -85,7 +85,7 @@ use oamp_types::validate::validate_knowledge_entry;
 let result = validate_knowledge_entry(&entry);
 
 # Or in code (TypeScript)
-import { KnowledgeEntry } from '@oamp/types';
+import { KnowledgeEntry } from '@deepthinking/oamp-types';
 KnowledgeEntry.parse(data); // throws on invalid
 ```
 

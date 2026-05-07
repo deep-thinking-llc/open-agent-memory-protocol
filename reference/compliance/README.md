@@ -1,8 +1,9 @@
 # OAMP Compliance Test Suite
 
 Automated test suite that verifies whether a backend implementation conforms to
-the OAMP v1 specification. Point it at any running OAMP server and get a
-compliance report.
+the stable OAMP v1.0 specification and the currently adopted additive v1.2
+draft coverage. Point it at any running OAMP server and get a compliance
+report.
 
 The suite now also includes additive `v1.2` governed-memory coverage for:
 

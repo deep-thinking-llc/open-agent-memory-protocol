@@ -4,7 +4,7 @@
 
 ### Your AI agent's memory should belong to you.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](spec/v1/oamp-v1.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](spec/v1.2/oamp-v1.2-draft.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Rust Crate](https://img.shields.io/crates/v/oamp-types.svg)](https://crates.io/crates/oamp-types)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -12,7 +12,7 @@
 [![Go Reference](https://img.shields.io/badge/go-reference-blue.svg)](reference/go/)
 [![Hex Package](https://img.shields.io/badge/hex-oamp__types-purple.svg)](https://hex.pm/packages/oamp_types)
 
-[Specification](spec/v1/oamp-v1.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
+[Stable Spec](spec/v1/oamp-v1.md) | [Latest Draft](spec/v1.2/oamp-v1.2-draft.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
 
 Draft extensions: [v1.1](spec/v1.1/oamp-v1.1-draft.md) | [v1.2 governed memory](spec/v1.2/oamp-v1.2-draft.md)
 
@@ -143,11 +143,11 @@ oamp_types::validate::validate_knowledge_entry(&entry)?;
 ### TypeScript
 
 ```bash
-npm install @oamp/types
+npm install @deepthinking/oamp-types
 ```
 
 ```typescript
-import { KnowledgeEntry } from '@oamp/types';
+import { KnowledgeEntry } from '@deepthinking/oamp-types';
 
 const entry = KnowledgeEntry.parse(jsonData);
 console.log(entry.category);   // "correction"
@@ -236,7 +236,7 @@ pip install -e ".[dev]"
 python -m oamp_server
 ```
 
-OpenAPI docs at `http://localhost:8000/docs` — 12 endpoints for knowledge CRUD, user models, search, and bulk export/import.
+OpenAPI docs at `http://localhost:8000/docs` — 14 endpoints covering knowledge CRUD, user models, bulk export/import, capabilities, admin operations, and health.
 
 ---
 
@@ -258,7 +258,7 @@ proto/oamp/v1/             Protocol Buffer definitions
 
 reference/
   rust/                    Rust crate: oamp-types
-  typescript/              npm package: @oamp/types
+  typescript/              npm package: @deepthinking/oamp-types
   python/                  PyPI package: oamp-types
   go/                      Go module: oamp-go
   elixir/                  Hex package: oamp_types
@@ -302,7 +302,7 @@ Add memory portability to your agent:
 
 Build an OAMP-compliant memory store:
 
-- 10 REST endpoints (knowledge CRUD, user model, export/import)
+- 10 core REST endpoints (knowledge CRUD, user model, export/import), plus optional capabilities in the current draft line
 - Encryption at rest (mandatory)
 - Search (FTS, vector, or hybrid — your choice)
 
@@ -318,10 +318,12 @@ Build an OAMP-compliant memory store:
 
 | | |
 |:---|:---|
-| **Current version** | v1.0.0 |
+| **Current stable version** | v1.0.0 |
+| **Latest draft version** | v1.2.0-draft |
 | **Schema format** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **Compliance language** | RFC 2119 (MUST, SHOULD, MAY) |
-| **Full spec** | [spec/v1/oamp-v1.md](spec/v1/oamp-v1.md) |
+| **Stable spec** | [spec/v1/oamp-v1.md](spec/v1/oamp-v1.md) |
+| **Latest draft spec** | [spec/v1.2/oamp-v1.2-draft.md](spec/v1.2/oamp-v1.2-draft.md) |
 
 ### Planned for v2.0
 
@@ -329,7 +331,7 @@ Based on community feedback:
 - Session outcomes (structured task records)
 - Skill metrics (execution statistics)
 - Work patterns (activity timing, tool preferences)
-- Streaming API for real-time memory sync
+- Portable withheld/redacted result semantics
 
 ---
 

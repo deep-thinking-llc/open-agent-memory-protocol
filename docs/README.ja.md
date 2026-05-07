@@ -4,10 +4,10 @@
 
 ### AIエージェントの記憶は、あなたのものであるべきです。
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](../spec/v1/oamp-v1.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
-[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
 [![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
 [仕様](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript パッケージ](../reference/typescript/) | [Python パッケージ](../reference/python/) | [セキュリティガイド](security-guide.md)
@@ -137,11 +137,11 @@ oamp_types::validate::validate_knowledge_entry(&entry)?;
 ### TypeScript
 
 ```bash
-npm install @oamp/types
+npm install @deepthinking/oamp-types
 ```
 
 ```typescript
-import { KnowledgeEntry } from '@oamp/types';
+import { KnowledgeEntry } from '@deepthinking/oamp-types';
 
 const entry = KnowledgeEntry.parse(jsonData);
 console.log(entry.category);   // "correction"
@@ -240,11 +240,19 @@ spec/v1/
   *.schema.json            JSON Schema定義（draft-2020-12）
   examples/                有効なサンプルドキュメント
 
+spec/v1.1/
+  oamp-v1.1-draft.md       オプショナル機能のドラフト（streaming + as_of）
+
+spec/v1.2/
+  oamp-v1.2-draft.md       Governed-memory ドラフト
+  *.schema.json            追加的な v1.2 スキーマ定義
+  examples/                Governed-memory のサンプルドキュメント
+
 proto/oamp/v1/             Protocol Buffer定義
 
 reference/
   rust/                    Rust crate: oamp-types
-  typescript/              npmパッケージ: @oamp/types
+  typescript/              npmパッケージ: @deepthinking/oamp-types
   python/                  PyPIパッケージ: oamp-types
   go/                      Goモジュール: oamp-go
   elixir/                  Hexパッケージ: oamp_types
@@ -304,10 +312,12 @@ OAMP準拠のメモリストアを構築：
 
 | | |
 |:---|:---|
-| **現在のバージョン** | v1.0.0 |
+| **現在の安定版** | v1.0.0 |
+| **最新ドラフト版** | v1.2.0-draft |
 | **スキーマ形式** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **準拠言語** | RFC 2119 (MUST, SHOULD, MAY) |
-| **完全な仕様** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **安定版仕様** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **最新ドラフト仕様** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
 
 ### v2.0の計画
 
@@ -315,7 +325,7 @@ OAMP準拠のメモリストアを構築：
 - セッション成果（構造化されたタスク記録）
 - スキルメトリクス（実行統計）
 - 作業パターン（活動時間、ツールの好み）
-- リアルタイムメモリ同期のためのストリーミングAPI
+- ポータブルな withheld/redacted 結果セマンティクス
 
 ---
 

@@ -4,10 +4,10 @@
 
 ### AI 에이전트의 메모리는 당신의 것이어야 합니다.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](../spec/v1/oamp-v1.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
-[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
 [![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
 [사양](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [TypeScript 패키지](../reference/typescript/) | [Python 패키지](../reference/python/) | [보안 가이드](security-guide.md)
@@ -137,11 +137,11 @@ oamp_types::validate::validate_knowledge_entry(&entry)?;
 ### TypeScript
 
 ```bash
-npm install @oamp/types
+npm install @deepthinking/oamp-types
 ```
 
 ```typescript
-import { KnowledgeEntry } from '@oamp/types';
+import { KnowledgeEntry } from '@deepthinking/oamp-types';
 
 const entry = KnowledgeEntry.parse(jsonData);
 console.log(entry.category);   // "correction"
@@ -240,11 +240,19 @@ spec/v1/
   *.schema.json            JSON Schema 정의 (draft-2020-12)
   examples/                유효한 예제 문서
 
+spec/v1.1/
+  oamp-v1.1-draft.md       선택적 기능 초안 (streaming + as_of)
+
+spec/v1.2/
+  oamp-v1.2-draft.md       Governed-memory 초안
+  *.schema.json            추가형 v1.2 스키마 정의
+  examples/                Governed-memory 예제 문서
+
 proto/oamp/v1/             Protocol Buffer 정의
 
 reference/
   rust/                    Rust crate: oamp-types
-  typescript/              npm 패키지: @oamp/types
+  typescript/              npm 패키지: @deepthinking/oamp-types
   python/                  PyPI 패키지: oamp-types
   go/                      Go 모듈: oamp-go
   elixir/                  Hex 패키지: oamp_types
@@ -304,10 +312,12 @@ OAMP 호환 메모리 저장소를 구축하세요:
 
 | | |
 |:---|:---|
-| **현재 버전** | v1.0.0 |
+| **현재 안정 버전** | v1.0.0 |
+| **최신 초안 버전** | v1.2.0-draft |
 | **스키마 형식** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **준수 언어** | RFC 2119 (MUST, SHOULD, MAY) |
-| **전체 사양** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **안정 사양** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **최신 초안 사양** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
 
 ### v2.0 계획
 
@@ -315,7 +325,7 @@ OAMP 호환 메모리 저장소를 구축하세요:
 - 세션 결과 (구조화된 작업 기록)
 - 스킬 메트릭 (실행 통계)
 - 작업 패턴 (활동 시간, 도구 선호도)
-- 실시간 메모리 동기화를 위한 스트리밍 API
+- 이식 가능한 withheld/redacted 결과 의미 체계
 
 ---
 

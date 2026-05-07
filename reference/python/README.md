@@ -128,8 +128,8 @@ Two levels of validation are provided:
 
 Creating or parsing models through Pydantic automatically validates:
 - Required fields must be present
-- `oamp_version` must be `"1.0.0"`
-- knowledge documents may also use `"1.1.0"` or `"1.2.0"`
+- user-model documents must keep `oamp_version` at `"1.0.0"`
+- knowledge documents may use `"1.0.0"`, `"1.1.0"`, or `"1.2.0"`
 - `type` must match the expected document type
 - `confidence` must be in [0.0, 1.0]
 - String fields must not be empty where required

@@ -4,10 +4,10 @@
 
 ### Memori ejen AI anda sepatutnya menjadi milik anda.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.0.0-blue.svg)](../spec/v1/oamp-v1.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
-[![npm Package](https://img.shields.io/badge/npm-%40oamp%2Ftypes-red.svg)](../reference/typescript/)
+[![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
 [![PyPI Package](https://img.shields.io/pypi/v/oamp-types.svg)](https://pypi.org/project/oamp-types/)
 
 [Spesifikasi](../spec/v1/oamp-v1.md) | [Rust Crate](../reference/rust/) | [Pakej TypeScript](../reference/typescript/) | [Pakej Python](../reference/python/) | [Panduan Keselamatan](security-guide.md)
@@ -137,11 +137,11 @@ oamp_types::validate::validate_knowledge_entry(&entry)?;
 ### TypeScript
 
 ```bash
-npm install @oamp/types
+npm install @deepthinking/oamp-types
 ```
 
 ```typescript
-import { KnowledgeEntry } from '@oamp/types';
+import { KnowledgeEntry } from '@deepthinking/oamp-types';
 
 const entry = KnowledgeEntry.parse(jsonData);
 console.log(entry.category);   // "correction"
@@ -240,11 +240,19 @@ spec/v1/
   *.schema.json            Definisi JSON Schema (draft-2020-12)
   examples/                Dokumen contoh yang sah
 
+spec/v1.1/
+  oamp-v1.1-draft.md       Draf keupayaan pilihan (streaming + as_of)
+
+spec/v1.2/
+  oamp-v1.2-draft.md       Draf governed-memory
+  *.schema.json            Definisi skema v1.2 tambahan
+  examples/                Dokumen contoh governed-memory
+
 proto/oamp/v1/             Definisi Protocol Buffer
 
 reference/
   rust/                    Rust crate: oamp-types
-  typescript/              Pakej npm: @oamp/types
+  typescript/              Pakej npm: @deepthinking/oamp-types
   python/                  Pakej PyPI: oamp-types
   go/                      Modul Go: oamp-go
   elixir/                  Pakej Hex: oamp_types
@@ -304,10 +312,12 @@ Bina stor memori patuh OAMP:
 
 | | |
 |:---|:---|
-| **Versi semasa** | v1.0.0 |
+| **Versi stabil semasa** | v1.0.0 |
+| **Versi draf terkini** | v1.2.0-draft |
 | **Format skema** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **Bahasa pematuhan** | RFC 2119 (MUST, SHOULD, MAY) |
-| **Spesifikasi penuh** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **Spesifikasi stabil** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
+| **Spesifikasi draf terkini** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
 
 ### Dirancang untuk v2.0
 
@@ -315,7 +325,7 @@ Berdasarkan maklum balas komuniti:
 - Hasil sesi (rekod tugasan berstruktur)
 - Metrik kemahiran (statistik pelaksanaan)
 - Corak kerja (masa aktiviti, keutamaan alat)
-- API penstriman untuk penyegerakan memori masa nyata
+- Semantik hasil withheld/redacted yang mudah alih
 
 ---
 
