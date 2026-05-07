@@ -5,8 +5,6 @@
 
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-SPEC_DIR="$SCRIPT_DIR/../spec/v1"
-
 if [ -z "$1" ]; then
     echo "Usage: $0 <document.json> [schema-name]"
     exit 1
@@ -17,6 +15,13 @@ if [ ! -f "$DOC" ]; then
     echo "Error: File not found: $DOC"
     exit 1
 fi
+
+VERSION=$(python3 -c "import json; print(json.load(open('$DOC')).get('oamp_version', '1.0.0'))" 2>/dev/null || echo "1.0.0")
+
+case "$VERSION" in
+    1.2.0) SPEC_DIR="$SCRIPT_DIR/../spec/v1.2" ;;
+    *) SPEC_DIR="$SCRIPT_DIR/../spec/v1" ;;
+esac
 
 # Auto-detect schema from "type" field
 if [ -z "$2" ]; then

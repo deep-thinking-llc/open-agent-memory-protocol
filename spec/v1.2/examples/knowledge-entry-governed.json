@@ -1,0 +1,44 @@
+{
+  "oamp_version": "1.2.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440100",
+  "user_id": "user-alice-123",
+  "category": "fact",
+  "content": "User can approve payroll exports but cannot approve vendor onboarding.",
+  "confidence": 0.91,
+  "source": {
+    "session_id": "sess-2026-05-07-001",
+    "agent_id": "cosmictron-v1",
+    "timestamp": "2026-05-07T10:00:00Z"
+  },
+  "provenance": {
+    "sources": [
+      {
+        "session_id": "sess-2026-05-07-001",
+        "agent_id": "cosmictron-v1",
+        "timestamp": "2026-05-07T10:00:00Z",
+        "turn_id": "turn-3"
+      },
+      {
+        "session_id": "sess-2026-05-07-002",
+        "agent_id": "cosmictron-v1",
+        "timestamp": "2026-05-07T10:05:00Z",
+        "turn_id": "turn-4"
+      }
+    ],
+    "derived": true
+  },
+  "governance": {
+    "sensitivity_class": "confidential",
+    "labels": ["finance", "payroll"],
+    "handling": {
+      "retrieval": "governed",
+      "export": "governed",
+      "stream": "governed"
+    }
+  },
+  "tags": ["access-control", "finance"],
+  "metadata": {
+    "vendor_hint": "portable-governance-example"
+  }
+}

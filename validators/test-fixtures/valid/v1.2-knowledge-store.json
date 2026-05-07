@@ -1,0 +1,25 @@
+{
+  "oamp_version": "1.2.0",
+  "type": "knowledge_store",
+  "user_id": "compliance-test-user",
+  "entries": [
+    {
+      "oamp_version": "1.2.0",
+      "type": "knowledge_entry",
+      "id": "550e8400-e29b-41d4-a716-446655440121",
+      "user_id": "compliance-test-user",
+      "category": "fact",
+      "content": "User reviews confidential vendor contracts on Fridays.",
+      "confidence": 0.89,
+      "source": {
+        "session_id": "compliance-session",
+        "timestamp": "2026-05-07T12:10:00Z"
+      },
+      "governance": {
+        "sensitivity_class": "restricted",
+        "labels": ["legal", "vendor-contracts"]
+      }
+    }
+  ],
+  "exported_at": "2026-05-07T12:15:00Z"
+}

@@ -5,12 +5,20 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0-draft] — 2026-05-07
 
 ### Added (proposed, draft for community review)
-- **`spec/v1.2/oamp-v1.2-governed-memory-draft.md`** — proposal for
-  standardizing governed-memory metadata across OAMP backends used by
-  `cosmictron`, `kizuna-mem`, and `ultra`.
-- **Working split for upstream review:** v1.2 would standardize additive
-  governance metadata and richer provenance, while portable withheld/redacted
-  result semantics are explicitly deferred to a separate v2.0 design track.
+- **`spec/v1.2/oamp-v1.2-governed-memory-draft.md`** — design rationale for
+  governed-memory standardization across OAMP backends used by `cosmictron`,
+  `kizuna-mem`, `ultra`, and `toraeru`.
+- **`spec/v1.2/oamp-v1.2-draft.md`** — normative draft that ratifies the
+  working split: v1.2 standardizes additive governance metadata, richer
+  provenance, and discovery/filter semantics, while withheld/redacted result
+  documents are explicitly deferred to a separate v2.0 design track.
+- **Concrete v1.2 contract artifacts**:
+  - `spec/v1.2/knowledge-entry.schema.json`
+  - `spec/v1.2/knowledge-store.schema.json`
+  - `spec/v1.2/openapi.yaml`
+  - `spec/v1.2/examples/*`
+- **Validator support for v1.2 documents** via `validators/validate.sh` and
+  governed-memory fixtures under `validators/test-fixtures/`.
 
 ### Proposed scope
 - Optional `governance` field on `KnowledgeEntry`

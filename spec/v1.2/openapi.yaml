@@ -1,0 +1,259 @@
+openapi: "3.1.0"
+info:
+  title: Open Agent Memory Protocol API
+  description: |
+    OAMP v1.2 additive overlay. This document defines the v1.2 schema and
+    capability changes on top of the v1.0 API surface and the optional v1.1
+    capabilities model.
+
+    Endpoints and response shapes not repeated here inherit their definitions
+    from `spec/v1/openapi.yaml`.
+  version: "1.2.0-draft"
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  contact:
+    email: contact@dthink.ai
+
+servers:
+  - url: http://localhost:8000
+    description: Local development
+  - url: https://oamp.example.com
+    description: Production (replace with your server URL)
+
+tags:
+  - name: Knowledge
+    description: Knowledge entry list and search extensions
+  - name: Capabilities
+    description: Optional feature discovery
+
+paths:
+  /v1/knowledge:
+    get:
+      tags: [Knowledge]
+      summary: List or search knowledge entries with optional governance filters
+      description: |
+        This v1.2 overlay adds OPTIONAL governance-aware filters to the
+        existing knowledge list/search endpoint defined in `spec/v1/openapi.yaml`.
+      operationId: listOrSearchKnowledgeV12
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Scope results to this user.
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Full-text search query.
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [fact, preference, pattern, correction]
+          description: Filter by knowledge category.
+        - name: sensitivity_class
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [public, internal, confidential, restricted]
+          description: |
+            OPTIONAL v1.2 governance-aware filter. Match entries whose
+            `governance.sensitivity_class` is in the provided set.
+        - name: governance_label
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+          description: |
+            OPTIONAL v1.2 governance-aware filter. Match entries containing
+            at least one listed governance label.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 200
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+            minimum: 0
+      responses:
+        "200":
+          description: Paginated list of knowledge entries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeEntryList'
+
+  /v1/capabilities:
+    get:
+      tags: [Capabilities]
+      summary: Discover optional OAMP capabilities
+      description: |
+        Returns optional feature support for the backend. This endpoint was
+        introduced by the v1.1 draft and is extended here with governed-memory
+        capability advertisement.
+      operationId: getCapabilities
+      security: []
+      responses:
+        "200":
+          description: Backend capabilities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CapabilitiesResponse'
+        "404":
+          description: Backend only implements v1.0 and has no capabilities endpoint
+
+components:
+  schemas:
+    KnowledgeEntry:
+      $ref: "./knowledge-entry.schema.json"
+
+    KnowledgeStore:
+      $ref: "./knowledge-store.schema.json"
+
+    KnowledgeEntryList:
+      type: object
+      required: [entries, total, limit, offset]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeEntry'
+          description: Knowledge entries in this page
+        total:
+          type: integer
+          description: Total number of matching entries
+        limit:
+          type: integer
+          description: Maximum entries per page
+        offset:
+          type: integer
+          description: Number of entries skipped
+        has_more:
+          type: boolean
+          description: Whether additional pages exist beyond this one
+
+    CapabilitiesResponse:
+      type: object
+      required: [oamp_version, capabilities]
+      properties:
+        oamp_version:
+          type: string
+          enum: ["1.1.0", "1.2.0"]
+          description: Highest OAMP minor version advertised by the backend.
+        capabilities:
+          $ref: '#/components/schemas/Capabilities'
+
+    Capabilities:
+      type: object
+      properties:
+        streaming:
+          $ref: '#/components/schemas/StreamingCapabilities'
+        as_of:
+          $ref: '#/components/schemas/AsOfCapabilities'
+        governance:
+          $ref: '#/components/schemas/GovernanceCapabilities'
+        user_id_format:
+          $ref: '#/components/schemas/UserIdFormat'
+        id_preservation:
+          type: string
+          enum: [preserved, regenerated]
+        content_types:
+          type: array
+          items:
+            type: string
+        auth_schemes:
+          type: array
+          items:
+            type: string
+        metadata:
+          type: object
+          additionalProperties: true
+      additionalProperties: true
+
+    StreamingCapabilities:
+      type: object
+      required: [supported]
+      properties:
+        supported:
+          type: boolean
+        subprotocol:
+          type: string
+        endpoint:
+          type: string
+        event_types:
+          type: array
+          items:
+            type: string
+        filter_keys:
+          type: array
+          items:
+            type: string
+          description: |
+            Optional list of accepted streaming filter keys. v1.2 governance
+            filters MAY include `sensitivity_class` and `governance_label`.
+      additionalProperties: true
+
+    AsOfCapabilities:
+      type: object
+      required: [supported]
+      properties:
+        supported:
+          type: boolean
+        endpoints:
+          type: array
+          items:
+            type: string
+        min_resolution_ms:
+          type: integer
+      additionalProperties: true
+
+    GovernanceCapabilities:
+      type: object
+      required: [supported, sensitivity_classes, labels_supported, extended_provenance_supported, withheld_stub_support]
+      properties:
+        supported:
+          type: boolean
+        sensitivity_classes:
+          type: array
+          items:
+            type: string
+            enum: [public, internal, confidential, restricted]
+        labels_supported:
+          type: boolean
+        extended_provenance_supported:
+          type: boolean
+        withheld_stub_support:
+          type: boolean
+      additionalProperties: false
+
+    UserIdFormat:
+      type: object
+      required: [description]
+      properties:
+        description:
+          type: string
+        pattern:
+          type: string
+      additionalProperties: false

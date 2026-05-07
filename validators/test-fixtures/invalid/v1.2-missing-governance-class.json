@@ -1,0 +1,16 @@
+{
+  "oamp_version": "1.2.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440122",
+  "user_id": "compliance-test-user",
+  "category": "fact",
+  "content": "This entry is invalid because governance is incomplete.",
+  "confidence": 0.5,
+  "source": {
+    "session_id": "compliance-session",
+    "timestamp": "2026-05-07T12:20:00Z"
+  },
+  "governance": {
+    "labels": ["missing-class"]
+  }
+}

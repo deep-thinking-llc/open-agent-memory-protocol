@@ -1,0 +1,30 @@
+{
+  "oamp_version": "1.2.0",
+  "type": "knowledge_entry",
+  "id": "550e8400-e29b-41d4-a716-446655440120",
+  "user_id": "compliance-test-user",
+  "category": "preference",
+  "content": "User wants financial approvals summarized at the end of the day.",
+  "confidence": 0.82,
+  "source": {
+    "session_id": "compliance-session",
+    "timestamp": "2026-05-07T12:00:00Z"
+  },
+  "provenance": {
+    "sources": [
+      {
+        "session_id": "compliance-session",
+        "timestamp": "2026-05-07T12:00:00Z",
+        "turn_id": "turn-9"
+      }
+    ]
+  },
+  "governance": {
+    "sensitivity_class": "internal",
+    "labels": ["finance"],
+    "handling": {
+      "retrieval": "governed",
+      "export": "governed"
+    }
+  }
+}

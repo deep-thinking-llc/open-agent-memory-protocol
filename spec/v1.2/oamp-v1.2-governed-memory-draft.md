@@ -3,7 +3,7 @@
 **Status:** Draft proposal
 **Date:** 2026-05-07
 **Authors:** Deep Thinking LLC
-**Related implementations:** `cosmictron`, `kizuna-mem`, `ultra`
+**Related implementations:** `cosmictron`, `kizuna-mem`, `ultra`, `toraeru`
 **Depends on:** `spec/v1/oamp-v1.md`, `spec/v1.1/oamp-v1.1-draft.md`
 
 ---
@@ -18,6 +18,8 @@ Multiple OAMP backends now need first-class governed memory:
   exported/imported governance metadata.
 - **ultra** will consume and produce governed memory, so vendor-specific
   `metadata.*` blobs are no longer sufficient if we want backend portability.
+- **toraeru** will integrate with OAMP and needs the same portable metadata
+  contract rather than backend-specific governance payloads.
 
 Today, OAMP v1.0/v1.1 can carry governed-memory data only as a vendor
 extension inside `metadata`, and that is compliant. However:
@@ -362,6 +364,7 @@ Adopt this proposal as the working direction:
 3. leave withholding/redaction semantics out of v1.2,
 4. open a separate v2.0 RFC for portable withheld results.
 
-That gives `cosmictron`, `kizuna-mem`, and `ultra` a common interoperable
-target now, without pretending that the current v1.x `KnowledgeEntry` shape can
-already express every governed-memory behavior we want.
+That gives `cosmictron`, `kizuna-mem`, `ultra`, and `toraeru` a common
+interoperable target now, without pretending that the current v1.x
+`KnowledgeEntry` shape can already express every governed-memory behavior we
+want.

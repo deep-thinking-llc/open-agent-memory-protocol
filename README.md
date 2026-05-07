@@ -14,6 +14,8 @@
 
 [Specification](spec/v1/oamp-v1.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
 
+Draft extensions: [v1.1](spec/v1.1/oamp-v1.1-draft.md) | [v1.2 governed memory](spec/v1.2/oamp-v1.2-draft.md)
+
 ---
 
 [中文](docs/README.zh.md) | [한국어](docs/README.ko.md) | [日本語](docs/README.ja.md) | [Bahasa Melayu](docs/README.ms.md)
@@ -241,6 +243,14 @@ spec/v1/
   oamp-v1.md              Authoritative specification (RFC 2119)
   *.schema.json            JSON Schema definitions (draft-2020-12)
   examples/                Valid example documents
+
+spec/v1.1/
+  oamp-v1.1-draft.md       Optional capabilities draft (streaming + as_of)
+
+spec/v1.2/
+  oamp-v1.2-draft.md       Governed-memory draft
+  *.schema.json            Additive v1.2 schema definitions
+  examples/                Governed-memory example documents
 
 proto/oamp/v1/             Protocol Buffer definitions
 

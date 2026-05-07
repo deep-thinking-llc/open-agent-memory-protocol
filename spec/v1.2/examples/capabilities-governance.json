@@ -1,0 +1,36 @@
+{
+  "oamp_version": "1.2.0",
+  "capabilities": {
+    "streaming": {
+      "supported": true,
+      "subprotocol": "oamp.v1",
+      "endpoint": "/v1/stream",
+      "event_types": [
+        "knowledge_created",
+        "knowledge_updated",
+        "knowledge_deleted",
+        "user_model_updated"
+      ],
+      "filter_keys": ["user_id", "event_type", "sensitivity_class", "governance_label"]
+    },
+    "as_of": {
+      "supported": true,
+      "endpoints": ["/v1/knowledge", "/v1/knowledge/{id}", "/v1/user-model/{user_id}"],
+      "min_resolution_ms": 1
+    },
+    "governance": {
+      "supported": true,
+      "sensitivity_classes": ["public", "internal", "confidential", "restricted"],
+      "labels_supported": true,
+      "extended_provenance_supported": true,
+      "withheld_stub_support": false
+    },
+    "user_id_format": {
+      "description": "tenant:node composite (e.g. '1:user')",
+      "pattern": "^[0-9]+:.+$"
+    },
+    "id_preservation": "preserved",
+    "content_types": ["application/json", "application/protobuf"],
+    "auth_schemes": ["bearer"]
+  }
+}
