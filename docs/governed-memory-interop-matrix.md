@@ -71,8 +71,8 @@ For each producer/consumer pair:
 
 | Producer | Consumer | Direction type | Required checks | Status |
 |----------|----------|----------------|-----------------|--------|
-| `cosmictron` | `kizuna-mem` | backend -> backend | fixture pack, governance, provenance, capabilities | planned |
-| `kizuna-mem` | `cosmictron` | backend -> backend | fixture pack, governance, provenance, capabilities | planned |
+| `cosmictron` | `kizuna-mem` | backend -> backend | fixture pack, governance, provenance, capabilities | automated |
+| `kizuna-mem` | `cosmictron` | backend -> backend | fixture pack, governance, provenance, capabilities | automated |
 | `cosmictron` | `ultra` | backend -> backend | fixture pack, governance, provenance, capabilities | planned |
 | `ultra` | `cosmictron` | backend -> backend | fixture pack, governance, provenance, capabilities | planned |
 | `kizuna-mem` | `ultra` | backend -> backend | fixture pack, governance, provenance, capabilities | planned |
@@ -89,6 +89,28 @@ have at least:
 - one automated backend-to-backend round-trip path using the canonical fixtures
 - one consumer/integrator path through `toraeru`
 - documented handling for any intentional lossy cases
+
+## Implemented Pairings
+
+### `cosmictron -> kizuna-mem`
+
+- Automated in `cosmictron` via `crates/cosmictron-oamp/tests/oamp_kizuna_mem_interop.rs`
+- Uses the canonical `knowledge-store-interop.json` fixture, with the fixture
+  user scope adapted to Kizuna's tenant-prefixed `user_id` shape
+- Governance fields survive exactly across the handoff
+- Kizuna currently canonicalizes detailed `provenance.sources[].session_id`
+  and `timestamp` fields, while preserving `derived` and `turn_id`
+- This is treated as an intentional lossy case because Kizuna now advertises
+  `capabilities.governance.extended_provenance_supported=false`
+
+### `kizuna-mem -> cosmictron`
+
+- Automated in the same `cosmictron` canary
+- `cosmictron` bulk import now accepts and preserves `1.3.0` governed-memory
+  stores emitted by Kizuna, while continuing to advertise its own local
+  implementation line separately
+- `cosmictron` re-export preserves the Kizuna-emitted governed document exactly
+  after timestamp formatting is normalized to semantic equality
 
 ## Notes
 
