@@ -2,6 +2,21 @@ name: Auto-translate Spec
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC — catch any drift weekly
+  push:
+    branches: [main]
+    paths:
+      - 'spec/v1/oamp-v1.md'
+      - 'spec/v1.1/oamp-v1.1.md'
+      - 'spec/v1.1/oamp-v1.1-draft.md'
+      - 'spec/v1.2/oamp-v1.2.md'
+      - 'spec/v1.2/oamp-v1.2-draft.md'
+      - 'spec/v1.2/oamp-v1.2-governed-memory.md'
+      - 'spec/v1.2/oamp-v1.2-governed-memory-draft.md'
+      - 'spec/v1.3/oamp-v1.3.md'
+      - 'spec/v1.3/oamp-v1.3-draft.md'
+      - 'scripts/auto-translate.py'
 
 jobs:
   translate:
@@ -13,52 +28,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # auto-translate.py reads git log timestamps
 
-      - name: Translate spec with OpenAI
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install OpenAI client
+        run: pip install --quiet openai
+
+      - name: Translate specs
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          set -e
-          pip install openai
-
-          python3 << 'PYEOF'
-          import os, json
-          from openai import OpenAI
-
-          client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
-
-          langs = {
-            "ja": "Japanese",
-            "zh": "Chinese (Simplified)",
-            "ko": "Korean",
-            "ms": "Bahasa Melayu"
-          }
-
-          with open("spec/v1/oamp-v1.md", "r") as f:
-            source = f.read()
-
-          for code, name in langs.items():
-            print(f"Translating to {name}...")
-            response = client.chat.completions.create(
-              model="gpt-4o-mini",
-              messages=[
-                {
-                  "role": "system",
-                  "content": f"You are a technical translator. Translate the following markdown document into {name}. Preserve all markdown formatting, code blocks, JSON examples, and RFC 2119 keywords (MUST, MUST NOT, REQUIRED, SHALL, SHALL NOT, SHOULD, SHOULD NOT, RECOMMENDED, MAY, OPTIONAL) in English. Only translate prose and headings."
-                },
-                {
-                  "role": "user",
-                  "content": source
-                }
-              ],
-              temperature=0.2,
-            )
-            translated = response.choices[0].message.content
-            out_path = f"spec/v1/oamp-v1.{code}.md"
-            with open(out_path, "w") as f:
-              f.write(translated)
-            print(f"Wrote {out_path}")
-          PYEOF
+        run: python3 scripts/auto-translate.py
 
       - name: Check for changes
         id: changes
@@ -74,10 +58,19 @@ jobs:
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: 'chore: auto-translate spec to ja, zh, ko, ms'
+          commit-message: 'chore: auto-translate specs to ja, zh, ko, ms'
           title: 'chore: auto-translate spec updates'
           body: |
-            This PR contains auto-generated translations of the spec.
-            Please review before merging.
+            Auto-generated translations of OAMP specs across all versions.
+
+            **Languages:** Japanese, Chinese (Simplified), Korean, Bahasa Melayu.
+            **Source:** stable filenames preferred, with `-draft` fallback when
+            only the draft exists.
+            **Model:** `gpt-4o-mini` (temperature 0.2).
+
+            **Please review before merging.** Machine translation requires
+            human review for normative spec language — pay attention to
+            RFC 2119 keywords (which should remain in English) and to any
+            sections where precise wording carries protocol meaning.
           branch: auto-translate-spec
           delete-branch: true
