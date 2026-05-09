@@ -4,7 +4,7 @@
 
 ### AIエージェントの記憶は、あなたのものであるべきです。
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0-blue.svg)](../spec/v1.2/oamp-v1.2.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -241,10 +241,10 @@ spec/v1/
   examples/                有効なサンプルドキュメント
 
 spec/v1.1/
-  oamp-v1.1-draft.md       オプショナル機能のドラフト（streaming + as_of）
+  oamp-v1.1.md             オプショナル機能（streaming + as_of）
 
 spec/v1.2/
-  oamp-v1.2-draft.md       Governed-memory ドラフト
+  oamp-v1.2.md             Governed-memory メタデータ
   *.schema.json            追加的な v1.2 スキーマ定義
   examples/                Governed-memory のサンプルドキュメント
 
@@ -313,11 +313,11 @@ OAMP準拠のメモリストアを構築：
 | | |
 |:---|:---|
 | **現在の安定版** | v1.0.0 |
-| **最新ドラフト版** | v1.2.0-draft |
+| **最新安定版** | v1.2.0 |
 | **スキーマ形式** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **準拠言語** | RFC 2119 (MUST, SHOULD, MAY) |
 | **安定版仕様** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
-| **最新ドラフト仕様** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
+| **最新安定仕様** | [spec/v1.2/oamp-v1.2.md](../spec/v1.2/oamp-v1.2.md) |
 
 ### v2.0の計画
 

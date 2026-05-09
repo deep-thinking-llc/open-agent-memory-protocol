@@ -5,8 +5,8 @@ sequence for OAMP.
 
 Related drafts:
 
-- `spec/v1.2/oamp-v1.2-governed-memory-draft.md`
-- `spec/v1.2/oamp-v1.2-draft.md`
+- `spec/v1.2/oamp-v1.2-governed-memory.md`
+- `spec/v1.2/oamp-v1.2.md`
 - `spec/v1.3/oamp-v1.3-draft.md`
 - `spec/v2.0/oamp-v2.0-withheld-results-rfc.md`
 
@@ -67,7 +67,7 @@ Acceptance criteria:
 
 Files:
 
-- `spec/v1.2/oamp-v1.2-governed-memory-draft.md`
+- `spec/v1.2/oamp-v1.2-governed-memory.md`
 - any consolidated capabilities spec text
 
 Acceptance criteria:

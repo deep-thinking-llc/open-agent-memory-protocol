@@ -4,7 +4,7 @@
 
 ### AI 에이전트의 메모리는 당신의 것이어야 합니다.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0-blue.svg)](../spec/v1.2/oamp-v1.2.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -241,10 +241,10 @@ spec/v1/
   examples/                유효한 예제 문서
 
 spec/v1.1/
-  oamp-v1.1-draft.md       선택적 기능 초안 (streaming + as_of)
+  oamp-v1.1.md             선택적 기능 (streaming + as_of)
 
 spec/v1.2/
-  oamp-v1.2-draft.md       Governed-memory 초안
+  oamp-v1.2.md             Governed-memory 메타데이터
   *.schema.json            추가형 v1.2 스키마 정의
   examples/                Governed-memory 예제 문서
 
@@ -313,11 +313,11 @@ OAMP 호환 메모리 저장소를 구축하세요:
 | | |
 |:---|:---|
 | **현재 안정 버전** | v1.0.0 |
-| **최신 초안 버전** | v1.2.0-draft |
+| **최신 안정 버전** | v1.2.0 |
 | **스키마 형식** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **준수 언어** | RFC 2119 (MUST, SHOULD, MAY) |
 | **안정 사양** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
-| **최신 초안 사양** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
+| **최신 안정 사양** | [spec/v1.2/oamp-v1.2.md](../spec/v1.2/oamp-v1.2.md) |
 
 ### v2.0 계획
 

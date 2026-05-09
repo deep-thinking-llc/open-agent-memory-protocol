@@ -2,13 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0-draft] — 2026-05-07
+## [1.2.0] — 2026-05-09
+
+Cross-impl interop verified 2026-05-09: kizuna-mem ↔ cosmictron, both
+directions produce empty diffs against `spec/v1.2/examples/` and
+`validators/test-fixtures/valid/`. Conformance pressure-test passed; v1.2
+promoted from draft.
 
 ### Added (proposed, draft for community review)
-- **`spec/v1.2/oamp-v1.2-governed-memory-draft.md`** — design rationale for
+- **`spec/v1.2/oamp-v1.2-governed-memory.md`** — design rationale for
   governed-memory standardization across OAMP backends used by `cosmictron`,
   `kizuna-mem`, `ultra`, and `toraeru`.
-- **`spec/v1.2/oamp-v1.2-draft.md`** — normative draft that ratifies the
+- **`spec/v1.2/oamp-v1.2.md`** — normative spec that ratifies the
   working split: v1.2 standardizes additive governance metadata, richer
   provenance, and discovery/filter semantics, while withheld/redacted result
   documents are explicitly deferred to a separate v2.0 design track.
@@ -78,10 +83,10 @@ All notable changes to this project will be documented in this file.
 - Portable `withholding_reason` envelopes
 - Stream-level withheld event payloads
 
-## [1.1.0-draft] — 2026-05-02
+## [1.1.0] — 2026-05-09
 
 ### Added (proposed, draft for community review)
-- **`spec/v1.1/oamp-v1.1-draft.md`** — Strictly additive minor version
+- **`spec/v1.1/oamp-v1.1.md`** — Strictly additive minor version
   introducing two OPTIONAL capabilities and a capabilities-discovery
   endpoint. No breaking changes; v1.0 clients remain wire-compatible.
 - **Capabilities discovery endpoint** (`GET /v1/capabilities`) — lets

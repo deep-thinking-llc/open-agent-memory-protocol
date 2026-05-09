@@ -73,6 +73,6 @@ Support at minimum `application/json`. Optionally support `application/protobuf`
 
 If your backend implements governed memory today, the recommended path is:
 
-1. Preserve `governance` and `provenance` per `spec/v1.2/oamp-v1.2-draft.md`
+1. Preserve `governance` and `provenance` per `spec/v1.2/oamp-v1.2.md`
 2. Advertise `capabilities.governance`
 3. Add `capabilities.governance.enforcement` and enforce grant-based filtering per `spec/v1.3/oamp-v1.3-draft.md`

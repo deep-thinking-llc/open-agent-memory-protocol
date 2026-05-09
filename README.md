@@ -14,7 +14,7 @@
 
 [Stable Spec](spec/v1/oamp-v1.md) | [Latest Draft](spec/v1.3/oamp-v1.3-draft.md) | [Rust](reference/rust/) | [TypeScript](reference/typescript/) | [Python](reference/python/) | [Go](reference/go/) | [Elixir](reference/elixir/) | [Security Guide](docs/security-guide.md)
 
-Draft extensions: [v1.1](spec/v1.1/oamp-v1.1-draft.md) | [v1.2 governed memory metadata](spec/v1.2/oamp-v1.2-draft.md) | [v1.3 governed memory enforcement](spec/v1.3/oamp-v1.3-draft.md)
+Stable extensions: [v1.1](spec/v1.1/oamp-v1.1.md) | [v1.2 governed memory metadata](spec/v1.2/oamp-v1.2.md). Draft: [v1.3 governed memory enforcement](spec/v1.3/oamp-v1.3-draft.md)
 
 The reference Python, TypeScript, Rust, Go, and Elixir libraries all parse the additive governed-memory entry/store shape used by both the `v1.2` and `v1.3` draft lines.
 
@@ -247,10 +247,10 @@ spec/v1/
   examples/                Valid example documents
 
 spec/v1.1/
-  oamp-v1.1-draft.md       Optional capabilities draft (streaming + as_of)
+  oamp-v1.1.md             Optional capabilities (streaming + as_of)
 
 spec/v1.2/
-  oamp-v1.2-draft.md       Governed-memory draft
+  oamp-v1.2.md             Governed-memory metadata
   *.schema.json            Additive v1.2 schema definitions
   examples/                Governed-memory example documents
 

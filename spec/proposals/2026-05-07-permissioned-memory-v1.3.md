@@ -5,7 +5,7 @@
 **Date:** 2026-05-07
 **Authors:** Deep Thinking LLC
 **Repository:** `github.com/deep-thinking-llc/open-agent-memory-protocol`
-**Depends on:** `spec/v1/oamp-v1.md`, `spec/v1.1/oamp-v1.1-draft.md`, `spec/v1.2/oamp-v1.2-draft.md`, `spec/v1.2/oamp-v1.2-governed-memory-draft.md`
+**Depends on:** `spec/v1/oamp-v1.md`, `spec/v1.1/oamp-v1.1.md`, `spec/v1.2/oamp-v1.2.md`, `spec/v1.2/oamp-v1.2-governed-memory.md`
 **Related:** `spec/v2.0/oamp-v2.0-withheld-results-rfc.md`
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD",
@@ -20,7 +20,7 @@ OAMP v1.2 introduced standardized **descriptive** governed-memory metadata
 (`governance.sensitivity_class`, `governance.labels`, `governance.handling`)
 on `KnowledgeEntry`. The v1.2 draft is explicit that `governance` is
 descriptive and "is not a portable policy engine"
-(`spec/v1.2/oamp-v1.2-draft.md` §3.1).
+(`spec/v1.2/oamp-v1.2.md` §3.1).
 
 This proposal targets v1.3 and adds the **enforcement** layer that
 operationalises v1.2's descriptive metadata. It defines a portable agent

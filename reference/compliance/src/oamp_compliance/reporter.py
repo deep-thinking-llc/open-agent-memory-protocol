@@ -13,7 +13,7 @@ from .tests.utils import TestResult
 
 
 REPORT_SPEC_LINE = "v1.x"
-REPORT_SPEC_COVERAGE = "stable v1.0.0 + additive v1.2.0-draft and v1.3.0-draft coverage"
+REPORT_SPEC_COVERAGE = "stable v1.0.0 + additive v1.1.0 + additive v1.2.0 and v1.3.0-draft coverage"
 
 
 def generate_report(

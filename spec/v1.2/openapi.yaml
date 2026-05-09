@@ -8,7 +8,7 @@ info:
 
     Endpoints and response shapes not repeated here inherit their definitions
     from `spec/v1/openapi.yaml`.
-  version: "1.2.0-draft"
+  version: "1.2.0"
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT

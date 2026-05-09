@@ -4,7 +4,7 @@
 
 ### 你的 AI 智能体的记忆，应该属于你自己。
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0-blue.svg)](../spec/v1.2/oamp-v1.2.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -241,10 +241,10 @@ spec/v1/
   examples/                有效的示例文档
 
 spec/v1.1/
-  oamp-v1.1-draft.md       可选能力草案（streaming + as_of）
+  oamp-v1.1.md             可选能力（streaming + as_of）
 
 spec/v1.2/
-  oamp-v1.2-draft.md       Governed-memory 草案
+  oamp-v1.2.md             Governed-memory 元数据
   *.schema.json            增量式 v1.2 Schema 定义
   examples/                Governed-memory 示例文档
 
@@ -313,11 +313,11 @@ docs/
 | | |
 |:---|:---|
 | **当前稳定版本** | v1.0.0 |
-| **最新草案版本** | v1.2.0-draft |
+| **最新稳定版本** | v1.2.0 |
 | **Schema 格式** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **合规语言** | RFC 2119 (MUST, SHOULD, MAY) |
 | **稳定规范** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
-| **最新草案规范** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
+| **最新稳定规范** | [spec/v1.2/oamp-v1.2.md](../spec/v1.2/oamp-v1.2.md) |
 
 ### v2.0 计划
 

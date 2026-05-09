@@ -1,10 +1,10 @@
-# Open Agent Memory Protocol — Governed Memory Proposal for v1.2
+# Open Agent Memory Protocol — Governed Memory for v1.2
 
-**Status:** Draft proposal
-**Date:** 2026-05-07
+**Status:** Stable
+**Date:** 2026-05-09
 **Authors:** Deep Thinking LLC
 **Related implementations:** `cosmictron`, `kizuna-mem`, `ultra`, `toraeru`
-**Depends on:** `spec/v1/oamp-v1.md`, `spec/v1.1/oamp-v1.1-draft.md`
+**Depends on:** `spec/v1/oamp-v1.md`, `spec/v1.1/oamp-v1.1.md`
 
 ---
 
@@ -326,7 +326,7 @@ Files:
 
 Files:
 
-- `spec/v1.2/oamp-v1.2-draft.md`
+- `spec/v1.2/oamp-v1.2.md`
 - `spec/v1.2/openapi.yaml`
 - v1.1 capabilities text if reused or superseded
 

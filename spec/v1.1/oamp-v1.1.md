@@ -1,7 +1,7 @@
-# Open Agent Memory Protocol — Version 1.1.0 (Draft)
+# Open Agent Memory Protocol — Version 1.1.0
 
-**Status:** Draft (proposed minor version)
-**Date:** 2026-05-02
+**Status:** Stable
+**Date:** 2026-05-09
 **Authors:** Deep Thinking LLC
 **Supersedes:** None — extends v1.0.0 additively
 **Repository:** `github.com/deep-thinking-llc/open-agent-memory-protocol`

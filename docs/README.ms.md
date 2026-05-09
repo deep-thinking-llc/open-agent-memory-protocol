@@ -4,7 +4,7 @@
 
 ### Memori ejen AI anda sepatutnya menjadi milik anda.
 
-[![Spec Version](https://img.shields.io/badge/spec-v1.2.0--draft-blue.svg)](../spec/v1.2/oamp-v1.2-draft.md)
+[![Spec Version](https://img.shields.io/badge/spec-v1.2.0-blue.svg)](../spec/v1.2/oamp-v1.2.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](../LICENSE)
 [![Rust Crate](https://img.shields.io/badge/crate-oamp--types-orange.svg)](../reference/rust/)
 [![npm Package](https://img.shields.io/npm/v/@deepthinking/oamp-types.svg)](https://www.npmjs.com/package/@deepthinking/oamp-types)
@@ -241,10 +241,10 @@ spec/v1/
   examples/                Dokumen contoh yang sah
 
 spec/v1.1/
-  oamp-v1.1-draft.md       Draf keupayaan pilihan (streaming + as_of)
+  oamp-v1.1.md             Keupayaan pilihan (streaming + as_of)
 
 spec/v1.2/
-  oamp-v1.2-draft.md       Draf governed-memory
+  oamp-v1.2.md             Metadata governed-memory
   *.schema.json            Definisi skema v1.2 tambahan
   examples/                Dokumen contoh governed-memory
 
@@ -313,11 +313,11 @@ Bina stor memori patuh OAMP:
 | | |
 |:---|:---|
 | **Versi stabil semasa** | v1.0.0 |
-| **Versi draf terkini** | v1.2.0-draft |
+| **Versi stabil terkini** | v1.2.0 |
 | **Format skema** | JSON Schema (draft-2020-12) + Protocol Buffers |
 | **Bahasa pematuhan** | RFC 2119 (MUST, SHOULD, MAY) |
 | **Spesifikasi stabil** | [spec/v1/oamp-v1.md](../spec/v1/oamp-v1.md) |
-| **Spesifikasi draf terkini** | [spec/v1.2/oamp-v1.2-draft.md](../spec/v1.2/oamp-v1.2-draft.md) |
+| **Spesifikasi stabil terkini** | [spec/v1.2/oamp-v1.2.md](../spec/v1.2/oamp-v1.2.md) |
 
 ### Dirancang untuk v2.0
 
