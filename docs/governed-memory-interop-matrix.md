@@ -77,8 +77,10 @@ For each producer/consumer pair:
 |----------|----------|----------------|-----------------|--------|
 | `cosmictron` | `kizuna-mem` | backend -> backend | fixture pack, governance, provenance, capabilities | automated |
 | `kizuna-mem` | `cosmictron` | backend -> backend | fixture pack, governance, provenance, capabilities | automated |
-| `cosmictron` | `ultra` | backend capabilities -> mediated client | capabilities negotiation, fail-closed governance expectations | contract-tested |
-| `kizuna-mem` | `ultra` | backend capabilities -> mediated client | capabilities negotiation, fail-closed governance expectations | contract-tested |
+| `cosmictron` | `ultra` | backend -> mediated client | live create/get canary, governed response consumption, typed user-id negotiation | automated |
+| `ultra` | `cosmictron` | mediated client -> backend | live create/get canary, governed request mapping, typed user-id negotiation | automated |
+| `kizuna-mem` | `ultra` | backend -> mediated client | live create/get canary, governed response consumption, tenant-prefixed user-id handling | automated |
+| `ultra` | `kizuna-mem` | mediated client -> backend | live create/get canary, governed request mapping, tenant-prefixed user-id handling | automated |
 | `cosmictron` | `toraeru` | backend -> integrator | fixture pack, capabilities, fixture consumption | automated |
 | `kizuna-mem` | `toraeru` | backend -> integrator | fixture pack, capabilities, fixture consumption | automated |
 
@@ -89,7 +91,7 @@ have at least:
 
 - one automated backend-to-backend round-trip path using the canonical fixtures
 - one consumer/integrator path through `toraeru`
-- one mediated-client capability-negotiation path through `ultra`
+- one mediated-client live-peer path through `ultra`
 - documented handling for any intentional lossy cases
 
 ## Implemented Pairings
@@ -135,19 +137,42 @@ have at least:
 
 ### `cosmictron -> ultra`
 
-- Contract-tested in `ultrasushitron` via
-  `core/tests/cosmictron_oamp_ultra_mediated_contract_test.rs`
+- Automated in `ultrasushitron` via
+  `core/tests/cosmictron_oamp_real_peer_canary.rs`, with a runnable helper at
+  `scripts/run-cosmictron-real-substrate-canary.sh`
+- Verified against a live Cosmictron canary server on 2026-05-09
 - Ultra accepts both legacy flat capability payloads and the standard nested
   `capabilities.governance.*` shape used by governed-memory backends
-- Ultra fails closed when governance or extended provenance expectations are
-  required but not advertised by the peer
+- Ultra consumes governed create/get responses from a real Cosmictron peer
+- Ultra negotiates Cosmictron's typed-route `user_id` contract from
+  `capabilities.user_id_format.description`
+
+### `ultra -> cosmictron`
+
+- Automated in the same Ultra live canary
+- The canary now proved a real wire-shape bug fix: Ultra had to map its
+  internal governed-memory create payload from `sensitivity` to OAMP
+  `sensitivity_class` before Cosmictron would accept the entry
+- Governed `governance` and portable `provenance` fields round-trip through
+  real `POST /v1/oamp/knowledge` and `GET /v1/oamp/knowledge/{id}` calls
 
 ### `kizuna-mem -> ultra`
 
-- Covered by the same Ultra contract path using a standard nested OAMP
-  `v1.3.0` capability advertisement shaped like Kizuna's real payload
-- This is currently a capability-negotiation proof, not a live backend
-  round-trip, because Ultra is a mediated client rather than a memory backend
+- Automated in `ultrasushitron` via
+  `core/tests/cosmictron_oamp_real_peer_canary.rs`, with a runnable helper at
+  `scripts/run-kizuna-real-substrate-canary.sh`
+- Verified against a live Kizuna `v1.3.0` server on 2026-05-09
+- Ultra consumes governed create/get responses from a real Kizuna peer
+- Kizuna's advertised `extended_provenance_supported=false` remains accurate
+  on this path; the canary requires governed labels and portable provenance
+  fields that Kizuna claims to preserve
+
+### `ultra -> kizuna-mem`
+
+- Automated in the same Ultra live canary
+- Ultra preserves Kizuna's tenant-prefixed `user_id` contract on `/v1/oamp/*`
+- Governed `governance` and portable `provenance` fields round-trip through
+  real `POST /v1/oamp/knowledge` and `GET /v1/oamp/knowledge/{id}` calls
 
 ### `cosmictron -> toraeru`
 
