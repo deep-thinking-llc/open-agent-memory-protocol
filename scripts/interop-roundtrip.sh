@@ -130,11 +130,13 @@ fi
 #    only if the consumer explicitly advertises that gap.
 if [[ "$DRIFT" -eq 1 ]]; then
   say "Step 8: reconcile drift against consumer capabilities"
-  caps_supports() { jq -e --arg k "$1" '
-    (.governance.supported // false) as $g
-    | (.governance[$k] // null) as $v
-    | ($g == true) and ($v == true)
-  ' "$CONSUMER_CAPS" >/dev/null; }
+  governance_jq='(.capabilities.governance // .governance // {})'
+  caps_supports() { jq -e --arg k "$1" --argjson empty '{}' "
+    ${governance_jq} as \$g
+    | (\$g.supported // false) as \$supported
+    | (\$g[\$k] // null) as \$value
+    | (\$supported == true) and (\$value == true)
+  " "$CONSUMER_CAPS" >/dev/null; }
 
   # Fields the script knows how to interpret.
   declare -A field_cap=(
@@ -151,7 +153,7 @@ if [[ "$DRIFT" -eq 1 ]]; then
        ! grep -q -- "+.*\"${field#*.}\"" "$DIFF_REPORT"; then
       cap_key="${field_cap[$field]}"
       if [[ "$cap_key" == "supported" ]]; then
-        if jq -e '.governance.supported == false' "$CONSUMER_CAPS" >/dev/null; then
+        if jq -e "${governance_jq} | (.supported // false) == false" "$CONSUMER_CAPS" >/dev/null; then
           echo "  ok: $field dropped, consumer advertises governance.supported=false"
         else
           echo "  unexplained: $field dropped but consumer claims governance support"
