@@ -12,10 +12,6 @@ across the current OAMP ecosystem:
 - `ultra`
 - `toraeru`
 
-`ultra` is included as an OAMP-consuming mediated client, not as an OAMP
-substrate/backend. Rows that previously treated Ultra as a backend have been
-reframed accordingly.
-
 ## Canonical Fixture Pack
 
 Every backend pair or consumer path should be exercised with the same canonical
