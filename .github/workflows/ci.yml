@@ -172,13 +172,16 @@ jobs:
 
       - name: Install dependencies
         working-directory: reference/server
+        # Use a venv to bypass PEP 668 on Debian/Ubuntu self-hosted runners
+        # where the system Python is marked externally-managed.
         run: |-
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -e ".[dev]"
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ".[dev]"
 
       - name: Run tests
         working-directory: reference/server
-        run: PYTHONPATH=src python3 -m pytest tests/ -v
+        run: PYTHONPATH=src .venv/bin/python -m pytest tests/ -v
 
   # ── Interop canary (self-loopback against reference server) ────
 
@@ -201,17 +204,19 @@ jobs:
 
       - name: Install reference server
         working-directory: reference/server
+        # Use a venv to bypass PEP 668 on Debian/Ubuntu self-hosted runners.
         run: |-
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -e ".[dev]"
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ".[dev]"
 
       - name: Start two reference server instances
         working-directory: reference/server
         run: |-
           mkdir -p /tmp/oamp-canary
-          PYTHONPATH=src nohup python3 -m oamp_server --host 127.0.0.1 --port 8001 --db-path /tmp/oamp-canary/producer.db > /tmp/oamp-canary/producer.log 2>&1 &
+          PYTHONPATH=src nohup .venv/bin/python -m oamp_server --host 127.0.0.1 --port 8001 --db-path /tmp/oamp-canary/producer.db > /tmp/oamp-canary/producer.log 2>&1 &
           echo $! > /tmp/oamp-canary/producer.pid
-          PYTHONPATH=src nohup python3 -m oamp_server --host 127.0.0.1 --port 8002 --db-path /tmp/oamp-canary/consumer.db > /tmp/oamp-canary/consumer.log 2>&1 &
+          PYTHONPATH=src nohup .venv/bin/python -m oamp_server --host 127.0.0.1 --port 8002 --db-path /tmp/oamp-canary/consumer.db > /tmp/oamp-canary/consumer.log 2>&1 &
           echo $! > /tmp/oamp-canary/consumer.pid
 
       - name: Wait for servers to become healthy
@@ -260,7 +265,12 @@ jobs:
   cross-language-check:
     name: Cross-language consistency
     runs-on: [self-hosted, Linux, build-hetzner]
-    needs: [test-rust, test-typescript, test-python, test-go, test-elixir, test-server]
+    # Only require what reliably runs on this runner today. The TS/Go/Elixir/
+    # Python-matrix jobs fail on toolchain or setup-python issues that need
+    # runner-side fixes; including them here would skip this check on every
+    # run. Spec consistency does not need those toolchains to evaluate — it
+    # reads source files directly.
+    needs: [test-rust, test-server]
     timeout-minutes: 10
 
     steps:
@@ -269,9 +279,11 @@ jobs:
 
       - name: Validate spec examples (Python)
         working-directory: reference/python
+        # venv to bypass PEP 668.
         run: |-
-          python3 -m pip install -e ".[dev]" -q
-          python3 -c "
+          python3 -m venv .venv
+          .venv/bin/pip install -e ".[dev]" -q
+          .venv/bin/python -c "
           import json, sys
           from oamp_types import KnowledgeEntry, KnowledgeStore, UserModel
 
