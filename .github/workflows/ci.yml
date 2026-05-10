@@ -43,6 +43,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
+
       - name: Cache node_modules
         uses: actions/cache@v4
         with:
@@ -78,10 +81,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.python-version }} via mise
+        uses: jdx/mise-action@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          tool_versions: |
+            python ${{ matrix.python-version }}
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -92,13 +96,15 @@ jobs:
 
       - name: Install dependencies
         working-directory: reference/python
+        # venv keeps the install isolated from any system-managed Python.
         run: |-
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -e ".[dev]"
+          python3 -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ".[dev]"
 
       - name: Run tests
         working-directory: reference/python
-        run: python3 -m pytest tests/ -v
+        run: .venv/bin/python -m pytest tests/ -v
 
   # ── Go ─────────────────────────────────────────────────
 
@@ -110,6 +116,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -135,6 +144,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
+
       - name: Cache Elixir deps
         uses: actions/cache@v4
         with:
@@ -146,7 +158,12 @@ jobs:
 
       - name: Install dependencies
         working-directory: reference/elixir
-        run: mix deps.get
+        # mix may need hex/rebar fetched on first run; mise provides erlang+elixir
+        # but doesn't auto-install hex/rebar.
+        run: |-
+          mix local.hex --force
+          mix local.rebar --force
+          mix deps.get
 
       - name: Run tests
         working-directory: reference/elixir
@@ -162,6 +179,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -198,6 +218,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -283,9 +306,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Set up toolchains via mise
+        uses: jdx/mise-action@v2
+
       - name: Validate spec examples (Python)
         working-directory: reference/python
-        # venv to bypass PEP 668.
+        # venv keeps the install isolated from any system-managed Python.
         run: |-
           python3 -m venv .venv
           .venv/bin/pip install -e ".[dev]" -q

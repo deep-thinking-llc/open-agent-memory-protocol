@@ -53,4 +53,4 @@ design/
 *.dll
 
 # === Runtime version managers ===
-mise.toml
+# mise.toml is now tracked — it pins shared toolchain versions for CI and devs.

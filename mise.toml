@@ -1,0 +1,22 @@
+# mise (https://mise.jdx.dev) toolchain pins for OAMP reference implementations.
+#
+# Versions are coordinated with each language manifest:
+#   - Go: reference/go/go.mod declares go 1.23
+#   - Elixir: reference/elixir/mix.exs requires elixir ~> 1.14
+#   - TypeScript: reference/typescript/package-lock.json requires node >=12
+#   - Rust: reference/rust uses edition 2021
+#
+# CI installs these via `jdx/mise-action@v2`, which manages its own cache under
+# the runner user's home and avoids the runner _tool/ chown issue that breaks
+# the actions/setup-* family on kizuna-stage-1.
+#
+# Local devs can run `mise install` once and mise will pick these up
+# automatically via the trust prompt.
+
+[tools]
+python = "3.12"
+node = "20"
+go = "1.23"
+erlang = "27"
+elixir = "1.17"
+rust = "stable"
