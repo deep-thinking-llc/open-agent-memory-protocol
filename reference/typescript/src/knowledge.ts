@@ -66,5 +66,6 @@ export const KnowledgeStore = z.object({
   entries: z.array(KnowledgeEntry),
   exported_at: z.string().datetime(),
   agent_id: z.string().optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 export type KnowledgeStore = z.infer<typeof KnowledgeStore>;

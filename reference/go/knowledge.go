@@ -101,12 +101,13 @@ func NewKnowledgeEntry(userID string, category KnowledgeCategory, content string
 
 // KnowledgeStore is a collection document for bulk export and import.
 type KnowledgeStore struct {
-	OAMPVersion string           `json:"oamp_version"`
-	Type        string           `json:"type"`
-	UserID      string           `json:"user_id"`
-	Entries     []KnowledgeEntry `json:"entries"`
-	ExportedAt  time.Time        `json:"exported_at"`
-	AgentID     *string          `json:"agent_id,omitempty"`
+	OAMPVersion string                 `json:"oamp_version"`
+	Type        string                 `json:"type"`
+	UserID      string                 `json:"user_id"`
+	Entries     []KnowledgeEntry       `json:"entries"`
+	ExportedAt  time.Time              `json:"exported_at"`
+	AgentID     *string                `json:"agent_id,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
 }
 
 // NewKnowledgeStore creates a new knowledge store.

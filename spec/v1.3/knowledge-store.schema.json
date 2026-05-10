@@ -36,6 +36,17 @@
     "agent_id": {
       "type": "string",
       "description": "Identifier of the exporting agent."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Optional bag of export-time metadata. Carries 'user_model' when a UserModel is attached to the export, per OpenAPI /v1/export. Extensions may add additional keys.",
+      "properties": {
+        "user_model": {
+          "description": "UserModel attached to this export, when present.",
+          "type": "object"
+        }
+      },
+      "additionalProperties": true
     }
   },
   "additionalProperties": false,

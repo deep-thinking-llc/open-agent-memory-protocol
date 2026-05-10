@@ -175,6 +175,7 @@ class KnowledgeStore(BaseModel):
     entries: list[KnowledgeEntry] = Field(default_factory=list)
     exported_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     agent_id: Optional[str] = None
+    metadata: Optional[dict[str, Any]] = None
 
     @field_validator("oamp_version")
     @classmethod

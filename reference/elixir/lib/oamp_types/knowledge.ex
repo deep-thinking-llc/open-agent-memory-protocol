@@ -266,14 +266,16 @@ defmodule OampTypes.Knowledge do
       :user_id,
       entries: [],
       exported_at: nil,
-      agent_id: nil
+      agent_id: nil,
+      metadata: nil
     ]
 
     @type t :: %__MODULE__{
       user_id: String.t(),
       entries: [Entry.t()],
       exported_at: String.t() | nil,
-      agent_id: String.t() | nil
+      agent_id: String.t() | nil,
+      metadata: map() | nil
     }
 
     @doc """
@@ -284,7 +286,8 @@ defmodule OampTypes.Knowledge do
         user_id: user_id,
         entries: entries,
         exported_at: Keyword.get(opts, :exported_at, DateTime.utc_now() |> DateTime.to_iso8601()),
-        agent_id: Keyword.get(opts, :agent_id)
+        agent_id: Keyword.get(opts, :agent_id),
+        metadata: Keyword.get(opts, :metadata)
       }
     end
 
@@ -314,7 +317,8 @@ defmodule OampTypes.Knowledge do
         user_id: data["user_id"],
         entries: entries,
         exported_at: data["exported_at"],
-        agent_id: data["agent_id"]
+        agent_id: data["agent_id"],
+        metadata: data["metadata"]
       }
     end
   end
@@ -415,6 +419,7 @@ defmodule OampTypes.Knowledge do
       }
 
       fields = if store.agent_id, do: Map.put(fields, "agent_id", store.agent_id), else: fields
+      fields = if store.metadata, do: Map.put(fields, "metadata", store.metadata), else: fields
 
       Jason.Encode.map(fields, opts)
     end

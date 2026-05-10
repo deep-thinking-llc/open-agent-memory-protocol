@@ -315,6 +315,12 @@ class TestSpecClientImportExport:
         assert exported["metadata"]["user_model"]["user_id"] == user_id
         assert exported["metadata"]["user_model"]["model_version"] == 1
 
+        # The export must round-trip back through /v1/import — the canonical
+        # KnowledgeStore schema accepts top-level metadata so a backend can
+        # consume its own export when a UserModel was attached.
+        resp = await client.post("/v1/import", json=exported)
+        assert resp.status_code == 201, resp.json()
+
 
 class TestSpecClientSearch:
     """Search behavior exactly as a spec-implementing client expects."""

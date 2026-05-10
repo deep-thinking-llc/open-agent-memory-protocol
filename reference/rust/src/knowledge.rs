@@ -135,6 +135,8 @@ pub struct KnowledgeStore {
     pub exported_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub agent_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub metadata: Option<serde_json::Map<String, serde_json::Value>>,
 }
 
 impl KnowledgeStore {
@@ -146,6 +148,7 @@ impl KnowledgeStore {
             entries,
             exported_at: Utc::now(),
             agent_id: None,
+            metadata: None,
         }
     }
 }
