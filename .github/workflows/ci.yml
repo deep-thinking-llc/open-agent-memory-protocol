@@ -138,6 +138,10 @@ jobs:
           key: go-${{ runner.os }}-${{ hashFiles('reference/go/go.sum') }}
           restore-keys: go-${{ runner.os }}-
 
+      - name: Download Go modules
+        working-directory: reference/go
+        run: go mod download
+
       - name: Run tests
         working-directory: reference/go
         run: go test ./... -count=1
