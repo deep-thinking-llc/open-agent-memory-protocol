@@ -172,11 +172,15 @@ jobs:
 
       - name: Install dependencies
         working-directory: reference/server
-        # Use a venv to bypass PEP 668 on Debian/Ubuntu self-hosted runners
-        # where the system Python is marked externally-managed.
+        # venv bypasses PEP 668 on Debian/Ubuntu self-hosted runners. The
+        # local reference/python types must be installed before the server
+        # so the server's "oamp-types>=1.0.0" requirement resolves to the
+        # in-tree version (PyPI's release lags behind tip and lacks newer
+        # fields like provenance).
         run: |-
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ../python
           .venv/bin/pip install -e ".[dev]"
 
       - name: Run tests
@@ -204,10 +208,12 @@ jobs:
 
       - name: Install reference server
         working-directory: reference/server
-        # Use a venv to bypass PEP 668 on Debian/Ubuntu self-hosted runners.
+        # venv bypasses PEP 668. Local types must precede the server install
+        # so the in-tree oamp-types resolves the server's PyPI dependency.
         run: |-
           python3 -m venv .venv
           .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -e ../python
           .venv/bin/pip install -e ".[dev]"
 
       - name: Start two reference server instances
