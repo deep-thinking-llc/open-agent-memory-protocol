@@ -24,6 +24,10 @@ production deployment guidance.
 13. [Secure Key Destruction](#13-secure-key-destruction)
 14. [Rate Limiting](#14-rate-limiting)
 
+> §4 also contains a non-normative "Verifiable Erasure (Future Work)" note
+> that addresses recurring questions about Merkle-root inclusion/exclusion
+> proofs and their tension with GDPR Article 17.
+
 ---
 
 ## 1. Threat Model
@@ -289,6 +293,64 @@ POST /v1/export { user_id: "user-123" }
 - **Permanent**: No soft-delete, no tombstone tables
 - **Atomic**: All deletes in a single transaction
 - **Zeroized**: Encrypted data overwritten before deletion (spec §8.2.7)
+
+### Verifiable Erasure (Non-Normative — Future Work)
+
+OAMP's current erasure model is **trust-based**: the backend asserts that
+DELETE removed the data, and conformance is checked by the backend's own
+implementation and audit log. The spec does not currently offer a way for a
+data subject to *cryptographically verify* that their data is no longer
+present.
+
+This question comes up periodically — typically framed as *"could OAMP use a
+Merkle root so users get inclusion or exclusion proofs over the backend's
+state?"* The short answer is: it is an open research area, not a v1.x
+direction, and it has real tension with GDPR Article 17 that needs to be
+designed around rather than assumed away.
+
+**Why a naive Merkle commitment conflicts with erasure rights.** A Merkle
+root is a cryptographic commitment to its leaves. If a leaf hashes user
+content and the root is published, the root depends on that leaf existing.
+Regulators (notably the CNIL and EDPB) have held that **a hash of personal
+data is still personal data** when it is linkable to a subject. Erasing a
+leaf would either invalidate proofs for every other leaf in the tree or
+leave the original root as a permanent artifact that itself needs erasing.
+
+**Candidate patterns that thread the needle.** None are normative for OAMP;
+they are listed so that future proposals have a shared starting vocabulary.
+
+1. **Per-user Merkle trees.** The root is scoped to one data subject and is
+   destroyed alongside the user's data on erasure. Simple, but loses
+   cross-user verifiability.
+2. **Crypto-shredding leaves.** Each leaf is `H(salt || content)` with the
+   salt stored alongside the entry. On erasure, the salt is destroyed; the
+   leaf becomes a cryptographically unlinkable random value and the data is
+   no longer "personal data" under GDPR. Inclusion proofs for other entries
+   continue to verify. This is the leading candidate and has deployed
+   precedent in EU blockchain work.
+3. **Exclusion proofs via sparse Merkle trees.** Arguably the more useful
+   primitive for an erasure-rights context: prove to a user that entry `xyz`
+   is *not* in the current root. Requires sorted/sparse trees (RFC 6962-style
+   or Verkle), a publication cadence for roots, and client-side verification
+   tooling.
+
+**Planned sequencing.** When a verifiable-erasure capability is proposed
+(v2.x at the earliest), pattern 2 (crypto-shredded leaves) is the planned
+first iteration. It composes cleanly with the existing zeroize-before-delete
+machinery described in this section, gives a GDPR-defensible unlinkability
+guarantee, and uses commodity Merkle-inclusion-proof tooling rather than a
+new cryptosystem. Pattern 3 (sparse Merkle exclusion proofs) is a distant
+follow-on capability — it gives stronger user-facing absence proofs but
+requires sparse-tree machinery and per-SDK non-membership verifiers, so it
+belongs after pattern 2 has been deployed and the operational questions
+below are answered in practice. Pattern 1 is not on the path.
+
+**Status.** Verifiable erasure is not on the v1.x roadmap. A future proposal
+exploring pattern 2 would need to address: GDPR-defensibility of the
+published root, salt destruction guarantees that survive backups and
+restores, the operational cost of publishing roots, and what threat the
+proof is actually defending against (the current threat model already
+assumes the backend is trusted for deletion — see §1).
 
 ---
 
